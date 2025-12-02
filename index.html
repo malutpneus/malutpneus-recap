@@ -1,0 +1,3055 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Recapadora – Sistema</title>
+<style>
+  :root{
+    --slate-50:#f8fafc; --slate-100:#f1f5f9; --slate-200:#e2e8f0; --slate-300:#cbd5e1; --slate-400:#94a3b8; --slate-500:#64748b; --slate-600:#475569; --slate-700:#334155; --slate-800:#1f2937; --slate-900:#0f172a;
+    --sky-50:#f0f9ff; --sky-100:#e0f2fe; --sky-200:#bae6fd; --sky-300:#7dd3fc; --sky-400:#38bdf8; --sky-500:#0ea5e9; --sky-700:#0369a1;
+    --blue-600:#2563eb; --emerald-50:#ecfdf5; --emerald-200:#a7f3d0; --emerald-600:#059669; --rose-50:#fff1f2; --rose-200:#fecdd3; --rose-700:#be123c;
+    --radius-2xl:1.5rem; --shadow-md:0 8px 24px rgba(15,23,42,.12);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{margin:0;background:var(--slate-50);color:var(--slate-900);font:14px/1.4 system-ui,-apple-system,Segoe UI,Roboto,Inter,Helvetica,Arial,sans-serif;overflow-x:hidden}
+  .container{max-width:1200px;margin:0 auto;padding:0 1rem}
+  .header{border-radius:28px;background:linear-gradient(90deg,var(--blue-600),var(--sky-500));color:#fff;box-shadow:0 8px 24px rgba(37,99,235,.25);text-align:center;padding:1.25rem; padding-top:calc(1.25rem + env(safe-area-inset-top,0px))}
+  .header h1{margin:0;font-size:clamp(20px,2.6vw,28px);font-weight:800}
+  .header p{margin:.5rem 0 0}
+  .tabs{display:flex;gap:.5rem;overflow-x:auto;scroll-snap-type:x mandatory;padding:.5rem;border-radius:999px;background:#fff;border:1px solid var(--slate-200)}
+  .tab{scroll-snap-align:start;flex:0 0 auto;padding:.5rem 1rem;border-radius:999px;border:1px solid var(--slate-200);background:#fff;color:var(--slate-700);cursor:pointer}
+  .tab[aria-selected="true"]{border-color:var(--sky-300);color:var(--sky-700);box-shadow:0 0 0 2px rgba(14,165,233,.15) inset}
+  .card{background:#fff;border:1px solid var(--slate-200);border-radius:1.5rem;box-shadow:var(--shadow-md)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:.5rem;border-radius:1rem;padding:.5rem 1rem;border:1px solid transparent;font-weight:600;cursor:pointer;min-height:40px}
+  .btn-ghost{background:#f8fafc;border-color:var(--slate-200);color:var(--slate-700)}
+  .btn-emerald{background:var(--emerald-600);color:#fff}
+  .btn-sky{background:#fff;border-color:var(--sky-200);color:var(--sky-700)}
+  .btn-rose{background:#fff1f2;border-color:var(--rose-200);color:var(--rose-700)}
+  .btn-icon{padding:.35rem .55rem;border-radius:.6rem;border:1px solid var(--slate-200);background:#fff;min-height:40px}
+  .input, select, textarea{width:100%;border:1px solid var(--slate-200);border-radius:1rem;padding:.5rem .75rem;outline:none;min-height:40px;background:#fff;color:var(--slate-900)}
+  .input:focus,select:focus,textarea:focus{box-shadow:0 0 0 3px rgba(14,165,233,.28)}
+  .input:focus-visible, .btn:focus-visible, select:focus-visible, textarea:focus-visible { outline:2px solid var(--sky-500); outline-offset:2px }
+  .date-holder{position:relative}
+  .fake-ph{pointer-events:none;position:absolute;left:.75rem;top:50%;transform:translateY(-50%);color:var(--slate-500);opacity:.65}
+  .date-holder input[type="date"]:focus + .fake-ph,
+  .date-holder input[type="date"]:not(:placeholder-shown) + .fake-ph,
+  .date-holder input[type="date"][value]:not([value=""]) + .fake-ph{display:none}
+  .grid{display:grid;gap:1rem}
+  .grid-fit{grid-template-columns:repeat(4,1fr)}
+  @media (min-width:900px) and (max-width:1199px){ .grid-fit{grid-template-columns:repeat(3,1fr)} }
+  @media (min-width:600px) and (max-width:899px){ .grid-fit{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:599px){ .grid-fit{grid-template-columns:1fr} }
+  .metas-grid{grid-template-columns:repeat(3,1fr);gap:.5rem}
+  @media (max-width:1023px){ .metas-grid{grid-template-columns:repeat(2,1fr)} }
+  @media (max-width:767px){ .metas-grid{grid-template-columns:1fr} }
+  .filters{display:grid;gap:1rem; align-items:end}
+  @media (min-width:900px){ .filters{grid-template-columns:repeat(5,1fr);align-items:end} }
+  @media (max-width:899px){
+    .filters{grid-template-columns:repeat(6,1fr);align-items:end}
+    .filters > :nth-child(1){grid-column:1 / span 4}
+    .filters > :nth-child(4){grid-column:5 / span 2}
+    .filters > :nth-child(2){grid-column:1 / span 2}
+    .filters > :nth-child(3){grid-column:3 / span 2}
+    .filters > :nth-child(5){grid-column:5 / span 2}
+  }
+  @media (max-width:599px){ .filters{grid-template-columns:1fr} .filters > *{grid-column:1/-1} .filters .btn{width:100%} }
+  .table-wrap{overflow-x:auto}
+  table{width:100%;border-collapse:collapse;white-space:nowrap}
+  th,td{padding:.5rem .75rem;text-align:left;vertical-align:top}
+  thead th{color:var(--slate-600);font-weight:600;background:#fff;position:sticky;top:0;z-index:1}
+  tbody tr{border-top:1px solid var(--slate-100)}
+  tbody tr:hover{background:#f8fafc}
+  .sortable{cursor:pointer}
+  .sortable:after{content:" ⇅";color:var(--slate-400);font-weight:400}
+  .mb-2{margin-bottom:.5rem}.mb-3{margin-bottom:.75rem}.mb-4{margin-bottom:1rem}.mb-6{margin-bottom:1.5rem}
+  .mt-1{margin-top:.25rem}.mt-2{margin-top:.5rem}.mt-3{margin-top:.75rem}.mt-4{margin-top:1rem}
+  .p-4{padding:1rem}.p-5{padding:1.25rem}
+  .pb-24{padding-bottom:6rem}
+  .muted{color:var(--slate-600)}
+  .hidden{display:none !important}
+  .center{display:flex;align-items:center;justify-content:center;flex-direction:column}
+  details{border:1px solid var(--slate-200);border-radius:1.5rem;padding:.25rem .25rem .5rem}
+  details>summary{cursor:pointer;list-style:none;padding:.75rem 1rem;font-weight:700;color:var(--slate-800);display:flex;align-items:center;justify-content:space-between}
+  details[open]{padding-bottom:.75rem}
+  .pill{display:inline-flex;align-items:center;gap:.5rem;padding:.25rem .6rem;border:1px solid var(--sky-200);background:var(--sky-50);color:var(--sky-700);border-radius:999px;font-size:.85rem}
+  .donut{display:block;width:min(100%,420px);max-width:100%;aspect-ratio:1;height:auto;min-width:180px;margin:0 auto}
+  .tooltip{position:absolute;z-index:60;pointer-events:none;background:#fff;color:var(--slate-800);border:1px solid var(--slate-200);border-radius:.5rem;box-shadow:0 8px 24px rgba(15,23,42,.12);padding:.35rem .55rem;font-size:.9rem;white-space:nowrap;transform:translate(-50%,-120%)}
+  .modal-backdrop{position:fixed;inset:0;background:rgba(2,6,23,.55);display:flex;align-items:center;justify-content:center;z-index:70;padding:env(safe-area-inset-top,0) env(safe-area-inset-right,0) env(safe-area-inset-bottom,0) env(safe-area-inset-left,0)}
+  .modal{background:#fff;border:1px solid var(--slate-200);border-radius:1rem;max-width:720px;width:min(96vw,720px);max-height:85vh;overflow:auto;box-shadow:var(--shadow-md)}
+  .modal header{padding:1rem 1.25rem;border-bottom:1px solid var(--slate-200);display:flex;justify-content:space-between;align-items:center}
+  .modal .content{padding:1rem 1.25rem}
+  .toasts{position:fixed;right:1rem;bottom:calc(1rem + env(safe-area-inset-bottom,0px));z-index:80;display:flex;flex-direction:column;gap:.5rem}
+  .toast{max-width:340px;border-radius:1rem;padding:.75rem 1rem;border:1px solid var(--emerald-200);background:#fff;box-shadow:var(--shadow-md);display:flex;gap:.75rem}
+  .dot{width:10px;height:10px;border-radius:999px;background:var(--emerald-600);margin-top:4px}
+  .err{border-color:var(--rose-200) !important;box-shadow:0 0 0 3px rgba(190,18,60,.12)}
+  .err-msg{color:var(--rose-700);font-size:.85rem;margin-top:.25rem;min-height:1.1em}
+  @media print{
+    @page{ size:A4 landscape; margin:12mm }
+    html,body{background:#fff}
+    .no-print{display:none !important}
+    .print-only{display:block !important}
+    .print-flex{display:flex !important}
+    *{-webkit-print-color-adjust:exact; print-color-adjust:exact}
+  }
+  .print-only{display:none}
+  .print-header{display:none;background:linear-gradient(90deg,var(--blue-600),var(--sky-500));color:#fff;border-radius:16px;padding:10px 14px;margin-bottom:10px}
+  .print-chips{display:none;gap:.5rem;flex-wrap:wrap;margin-bottom:10px}
+  .chip{display:inline-flex;align-items:center;border-radius:999px;padding:.25rem .6rem;font-weight:600;background:var(--sky-50);border:1px solid var(--sky-200);color:var(--sky-700)}
+  .positive{color:var(--emerald-600)}
+  .negative{color:var(--rose-700)}
+  .ficha-print{page-break-after:always}
+  .ficha-print:last-child{page-break-after:avoid}
+</style>
+</head>
+<body>
+<header class="container mb-6 no-print">
+  <div class="header">
+    <h1>Painel – Recapagens & Faturamento</h1>
+    <p>Desenvolvido por Financeiro Jailton</p>
+  </div>
+</header>
+<main class="container pb-24">
+  <nav aria-label="Navegação de abas" class="mb-6 no-print">
+    <div class="tabs">
+      <button class="tab" data-tab="painel" aria-selected="true">Painel</button>
+      <button class="tab" data-tab="saida" aria-selected="false">Ficha de Saída</button>
+      <button class="tab" data-tab="entrada" aria-selected="false">Ficha de Entrada</button>
+      <button class="tab" data-tab="parametros" aria-selected="false">Parâmetros</button>
+    </div>
+  </nav>
+  <!-- === PAINEL === -->
+  <section id="view-painel">
+    <section class="mb-6 no-print">
+      <div class="card p-4">
+        <div class="grid filters">
+          <div style="display:flex;align-items:end;gap:.5rem">
+            <label class="mb-2" style="font-weight:600;color:var(--slate-700)">Competência</label>
+            <button id="btn-comp-prev" class="btn-icon" title="Mês anterior" aria-label="Mês anterior">◀</button>
+            <input id="comp-readonly" class="input" readonly style="width:150px">
+            <button id="btn-comp-next" class="btn-icon" title="Próximo mês" aria-label="Próximo mês">▶</button>
+          </div>
+          <div class="date-holder">
+            <label for="periodo-de" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Período (De)</label>
+            <input type="date" id="periodo-de" class="input" placeholder=" ">
+            <span class="fake-ph">dd/mm/aaaa</span>
+          </div>
+          <div class="date-holder">
+            <label for="periodo-ate" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Até</label>
+            <input type="date" id="periodo-ate" class="input" placeholder=" ">
+            <span class="fake-ph">dd/mm/aaaa</span>
+          </div>
+          <div style="display:flex;gap:.5rem;align-items:end">
+            <button id="btn-ativar-periodo" class="btn btn-sky">Aplicar</button>
+            <button id="btn-limpar-periodo" class="btn btn-ghost">Limpar</button>
+          </div>
+          <div>
+            <label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Serviço</label>
+            <select id="filtro-servico" class="input"></select>
+          </div>
+        </div>
+        <div id="pill-periodo" class="hidden mt-2" aria-live="polite">
+          <span class="pill">Período ativo: <span id="pill-periodo-text"></span></span>
+        </div>
+      </div>
+    </section>
+    <section class="mb-6">
+      <div class="grid grid-fit">
+        <!-- Recapagem -->
+        <div class="card p-5">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+            <h3 style="font-weight:700;color:var(--slate-800);margin:0">Recapagem</h3>
+            <span title="Meta diária (arred. por regra de meio), meta semanal (×6) e meta mensal exata." style="font-size:.75rem;background:var(--slate-100);color:var(--slate-600);border-radius:.5rem;padding:.1rem .4rem">i</span>
+          </div>
+          <div class="mt-3">
+            <div class="muted" style="font-weight:700;margin-bottom:.25rem">Diário</div>
+            <div style="display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap">
+              <div>Realizado do dia: <strong id="recap-dia-real">0</strong></div>
+              <div>Meta diária: <strong id="recap-dia-meta">0</strong></div>
+              <div>% da meta: <strong id="recap-dia-pct">0%</strong></div>
+            </div>
+            <div style="height:8px;width:100%;background:var(--slate-100);border-radius:999px;margin-top:.5rem">
+              <div id="recap-dia-bar" style="height:8px;background:var(--emerald-600);border-radius:999px;width:0%"></div>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="muted" style="font-weight:700;margin-bottom:.25rem">Acumulado no período</div>
+            <div style="display:flex;justify-content:space-between;gap:.75rem;flex-wrap:wrap">
+              <div>Realizado: <strong id="recap-acum-real">0</strong></div>
+              <div>Meta do período: <strong id="recap-acum-meta">0</strong></div>
+              <div>% cumprido: <strong id="recap-acum-pct">0%</strong></div>
+            </div>
+            <div style="height:8px;width:100%;background:var(--slate-100);border-radius:999px;margin-top:.5rem">
+              <div id="recap-acum-bar" style="height:8px;background:var(--sky-500);border-radius:999px;width:0%"></div>
+            </div>
+          </div>
+          <div style="display:grid;gap:.5rem;margin-top:1rem">
+            <div class="muted"><strong>Metas</strong></div>
+            <div class="table-wrap">
+              <table class="text-sm">
+                <thead><tr><th>Diária</th><th>Semanal (×6)</th><th>Mensal</th><th>% acumulado</th></tr></thead>
+                <tbody><tr><td id="meta-dia">0</td><td id="meta-semana">0</td><td id="meta-mes">0</td><td id="meta-pct">0%</td></tr></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+        <!-- Faturamento Bruto + metas Bronze/Prata/Ouro -->
+        <div class="card p-5">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-weight:700;color:var(--slate-800)">Faturamento Bruto</h3>
+            <span title="Total vendido antes de taxas." style="font-size:.75rem;background:var(--slate-100);color:var(--slate-600);border-radius:.5rem;padding:.1rem .4rem">i</span>
+          </div>
+          <div id="fat-mes-bruto" style="font-size:clamp(28px,6vw,44px);line-height:1.1;margin-top:.25rem">R$ 0,00</div>
+          <div class="mt-2">
+            <div class="muted" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:nowrap">
+              <span><span>% meta (ouro)</span><span id="meta-ouro" style="margin-left:.5rem">meta: R$ 0,00</span></span>
+              <strong id="pct-meta-ouro">0,00%</strong>
+            </div>
+            <div style="height:10px;width:100%;background:var(--slate-100);border-radius:999px;margin-top:.35rem"><div id="bar-meta-ouro" style="height:10px;background:var(--sky-500);border-radius:999px;width:0%"></div></div>
+          </div>
+          <div class="mt-2">
+            <div class="muted" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:nowrap">
+              <span><span>% meta (prata)</span><span id="meta-prata" style="margin-left:.5rem">meta: R$ 0,00</span></span>
+              <strong id="pct-meta-prata">0,00%</strong>
+            </div>
+            <div style="height:10px;width:100%;background:var(--slate-100);border-radius:999px;margin-top:.35rem"><div id="bar-meta-prata" style="height:10px;background:var(--sky-500);border-radius:999px;width:0%"></div></div>
+          </div>
+          <div class="mt-2">
+            <div class="muted" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:nowrap">
+              <span><span>% meta (bronze)</span><span id="meta-bronze" style="margin-left:.5rem">meta: R$ 0,00</span></span>
+              <strong id="pct-meta-bronze">0,00%</strong>
+            </div>
+            <div style="height:10px;width:100%;background:var(--slate-100);border-radius:999px;margin-top:.35rem"><div id="bar-meta-bronze" style="height:10px;background:var(--sky-500);border-radius:999px;width:0%"></div></div>
+          </div>
+        </div>
+        <!-- Desempenho por Vendedor -->
+        <div class="card p-5">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem">
+            <h3 style="font-weight:700;color:var(--slate-800);margin:0">Desempenho por Vendedor</h3>
+          </div>
+          <div class="mt-3">
+            <label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Selecionar</label>
+            <select id="filtro-vendedor" class="input">
+              <option value="ALL">Todos</option>
+            </select>
+          </div>
+          <div class="mt-3">
+            <div class="muted" style="font-weight:700;margin-bottom:.25rem">Faturamento Bruto</div>
+            <strong id="vend-bruto">R$ 0,00</strong> <span id="vend-bruto-pct"></span>
+          </div>
+          <div class="mt-3">
+            <div class="muted" style="font-weight:700;margin-bottom:.25rem">Faturamento Líquido</div>
+            <strong id="vend-liq">R$ 0,00</strong> <span id="vend-liq-pct" title="Percentual retido após taxas, descontos e outros ajustes financeiros (líquido / bruto)."></span>
+          </div>
+          <div class="mt-3">
+            <div class="muted" style="font-weight:700;margin-bottom:.25rem">Margem Recapagem</div>
+            <strong id="vend-margem-recap-valor">R$ 0,00</strong> (<span id="vend-margem-recap-pct">0,0%</span>)
+          </div>
+        </div>
+        <!-- Mix de Pagamento -->
+        <div class="card p-5" id="mix-card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-weight:700;color:var(--slate-800)">Mix de Pagamento</h3>
+            <span class="info" title="Distribuição por forma dos recebimentos." style="font-size:.75rem;background:var(--slate-100);color:var(--slate-600);border-radius:.5rem;padding:.1rem .4rem;cursor:help">i</span>
+          </div>
+          <div id="mix-empty" class="center" style="color:var(--slate-500);padding:2rem 0">
+            <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+            <p style="font-size:.9rem;margin:0">Sem lançamentos no período</p>
+          </div>
+          <svg id="donut" class="donut hidden" viewBox="0 0 200 200" aria-label="Mix de Pagamento"></svg>
+          <div id="mix-list" class="hidden mt-3 table-wrap">
+            <table class="text-sm"><thead><tr><th>Forma</th><th>Valor</th><th>%</th></tr></thead><tbody id="mix-body"></tbody></table>
+          </div>
+          <div class="muted mt-2">Total: <span id="mix-total">R$ 0,00</span></div>
+        </div>
+        <!-- KPI Meta por Serviço (R$) -->
+        <div class="card p-5">
+          <div style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+            <h3 style="font-weight:700;color:var(--slate-800);margin:0">Meta por Serviço (R$)</h3>
+            <div style="min-width:220px">
+              <label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Selecionar</label>
+              <select id="kpi-servico-select" class="input">
+                <option value="consertos">Consertos</option>
+                <option value="borracharia">Borracharia</option>
+                <option value="vendaPneus">Venda de Pneus</option>
+              </select>
+            </div>
+          </div>
+          <div class="mt-3">
+            <div class="muted" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap">
+              <span>Meta do período</span><strong id="kpi-servico-meta">R$ 0,00</strong>
+            </div>
+            <div class="muted" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:.35rem">
+              <span>Realizado (bruto)</span><strong id="kpi-servico-real">R$ 0,00</strong>
+            </div>
+            <div class="muted" style="display:flex;justify-content:space-between;align-items:center;gap:1rem;flex-wrap:wrap;margin-top:.35rem">
+              <span>% cumprido</span><strong id="kpi-servico-pct">0,00%</strong>
+            </div>
+            <div style="height:10px;width:100%;background:var(--slate-100);border-radius:999px;margin-top:.5rem">
+              <div id="kpi-servico-bar" style="height:10px;background:var(--emerald-600);border-radius:999px;width:0%"></div>
+            </div>
+          </div>
+        </div>
+        <!-- Novo KPI: Tempo Médio de Ciclo -->
+        <div class="card p-5">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-weight:700;color:var(--slate-800)">Tempo Médio de Ciclo</h3>
+            <span title="Média de dias entre Coleta e Entrega." style="font-size:.75rem;background:var(--slate-100);color:var(--slate-600);border-radius:.5rem;padding:.1rem .4rem">i</span>
+          </div>
+          <div id="ciclo-medio" style="font-size:clamp(28px,6vw,44px);line-height:1.1;margin-top:.25rem">0 dias</div>
+        </div>
+        <!-- Saídas não faturadas (KPI) -->
+        <div class="card p-5" id="nf-card">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h3 style="font-weight:700;color:var(--slate-800)">Saídas não faturadas</h3>
+            <span class="info" title="Mostra OS com saída, ainda não faturadas. Ao faturar, saem deste card automaticamente." style="font-size:.75rem;background:var(--slate-100);color:var(--slate-600);border-radius:.5rem;padding:.1rem .4rem;cursor:help">i</span>
+          </div>
+          <div id="nf-total" style="font-size:clamp(28px,6vw,44px);line-height:1.1;margin-top:.25rem">R$ 0,00</div>
+          <div class="muted" id="nf-count">#OS em aberto: 0</div>
+          <div class="mt-2"><div class="bar-bg" style="height:10px;background:var(--slate-100);border-radius:999px"><div id="nf-bar" style="height:10px;background:var(--rose-700);border-radius:999px;width:0%"></div></div></div>
+        </div>
+        <!-- Novo card: OS Canceladas -->
+        <div class="card p-5" data-card="canceladas">
+          <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem" class="title-row">
+            <h3 style="font-weight:700;color:var(--slate-800);margin:0">OS Canceladas</h3>
+          </div>
+          <div id="cancel-count" style="font-size:clamp(28px,6vw,44px);line-height:1.1;margin-top:.25rem">0</div>
+          <div id="cancel-pct" class="muted" style="font-size:1rem">0,0%</div>
+          <div class="mt-3" id="canceladas-section">
+            <div style="display:flex;justify-content:space-between;align-items:center">
+              <h4 style="margin:0;font-weight:700;color:var(--slate-800)">Detalhes</h4>
+              <button id="btn-toggle-canceladas" class="btn btn-ghost" aria-label="Mostrar/ocultar Detalhes" aria-expanded="false" title="Detalhes">▼</button>
+            </div>
+            <div class="mt-2" id="canceladas-collapsed"></div>
+            <div class="table-wrap hidden mt-2" id="canceladas-wrap">
+              <table class="text-sm" id="canceladas-table" aria-label="OS Canceladas">
+                <thead><tr><th>Cliente</th><th>OS</th><th>Data Cancelamento</th><th>Obs</th></tr></thead>
+                <tbody id="canceladas-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    <!-- Lista – Não faturadas -->
+    <section class="card p-5 mb-6" id="nf-list" data-card="nf">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem" class="title-row">
+        <h3 style="font-weight:700;color:var(--slate-800);margin:0">Saídas não faturadas</h3>
+        <div class="search" style="max-width:220px;flex:0 0 220px"><input id="nf-search" class="input" placeholder="Buscar (Cliente, Forma, OS)" aria-label="Buscar (Cliente, Forma, OS)"></div>
+      </div>
+      <div id="nf-empty" class="center" style="color:var(--slate-500);padding:2rem 0">
+        <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+        <p style="font-size:.9rem;margin:0">Sem OS em aberto</p>
+      </div>
+      <div class="hidden" id="nf-wrap">
+        <div class="table-wrap" data-section="nf">
+          <table class="text-sm" id="nf-table" aria-label="Saídas não faturadas">
+            <thead>
+              <tr>
+                <th class="sortable" data-sort="cliente">Cliente</th>
+                <th>Forma</th>
+                <th class="sortable" data-sort="valorb">Valor Bruto (R$)</th>
+                <th>Recebimento Líquido (R$)</th>
+                <th class="sortable" data-sort="data">Data</th>
+                <th>Ações</th>
+              </tr>
+            </thead>
+            <tbody id="nf-body"></tbody>
+            <tfoot><tr><td style="font-weight:700">Total</td><td></td><td id="nf-total-bruto">R$ 0,00</td><td id="nf-total-liq">R$ 0,00</td><td></td><td></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+    <!-- Top 5 Clientes -->
+    <section class="card p-5 mb-6" data-card="clients">
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:.75rem" class="title-row">
+        <h3 style="font-weight:700;color:var(--slate-800);margin:0">Top 5 Clientes</h3>
+        <div class="search" style="max-width:220px;flex:0 0 220px"><input id="clients-search" class="input" placeholder="Buscar cliente" aria-label="Buscar cliente"></div>
+      </div>
+      <div id="top-empty" class="center" style="color:var(--slate-500);padding:2rem 0">
+        <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+        <p style="font-size:.9rem;margin:0">Sem lançamentos no período</p>
+      </div>
+      <div class="hidden" id="top-wrap">
+        <div class="table-wrap" data-section="top5">
+          <table class="text-sm" id="top-table-top5" aria-label="Top 5 clientes por faturamento bruto">
+            <thead><tr><th>Cliente</th><th>Faturamento Bruto</th><th>Faturamento Líquido</th><th>% participação</th><th>Qtd OS</th><th>Ticket Médio</th></tr></thead>
+            <tbody id="top-body-top5"></tbody>
+            <tfoot><tr id="top-total-top5" class="hidden"><td style="font-weight:700">Total</td><td id="ttop5-bruto"></td><td id="ttop5-liq"></td><td id="ttop5-share">100,00%</td><td id="ttop5-os"></td><td id="ttop5-ticket"></td></tr></tfoot>
+          </table>
+        </div>
+        <div class="mt-3" id="demais-section" data-section="fora-top5">
+          <div style="display:flex;justify-content:space-between;align-items:center">
+            <h4 style="margin:0;font-weight:700;color:var(--slate-800)">Fora do Top 5</h4>
+            <button id="btn-toggle-rest" class="btn btn-ghost" aria-label="Mostrar/ocultar Fora do Top 5" aria-expanded="false" title="Fora do Top 5">▼</button>
+          </div>
+          <div class="mt-2" id="top-rest-collapsed"></div>
+          <div class="table-wrap hidden mt-2" id="top-rest-wrap">
+            <table class="text-sm" id="top-table-rest" aria-label="Fora do Top 5">
+              <thead><tr><th>Cliente</th><th>Faturamento Bruto</th><th>Faturamento Líquido</th><th>% participação</th><th>Qtd OS</th><th>Ticket Médio</th></tr></thead>
+            <tbody id="top-body-rest"></tbody>
+          </table>
+        </div>
+        </div>
+        <div class="table-wrap mt-3">
+          <table class="text-sm" aria-label="Totais de clientes">
+            <tfoot><tr><td style="font-weight:700">Total</td><td id="tall-bruto"></td><td id="tall-liq"></td><td id="tall-share">100,00%</td><td id="tall-os"></td><td id="tall-ticket"></td></tr></tfoot>
+          </table>
+        </div>
+      </div>
+    </section>
+  </section>
+  <!-- === FICHA DE SAÍDA === -->
+  <section id="view-saida" class="hidden">
+    <section class="mb-6 card p-5 no-print">
+      <h3 style="font-weight:700;color:var(--slate-800);margin-bottom:1rem">Cabeçalho do Lote</h3>
+      <div class="grid grid-fit">
+        <div class="date-holder">
+          <label for="cab-coleta" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Data da Coleta <span class="muted">*</span></label>
+          <input type="date" id="cab-coleta" class="input" placeholder=" ">
+          <span class="fake-ph">dd/mm/aaaa</span>
+          <div id="cab-coleta-err" class="err-msg" aria-live="polite"></div>
+        </div>
+        <div class="date-holder">
+          <label for="cab-servico" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Data de Serviço <span class="muted">*</span></label>
+          <input type="date" id="cab-servico" class="input" placeholder=" ">
+          <span class="fake-ph">dd/mm/aaaa</span>
+          <div id="cab-servico-err" class="err-msg" aria-live="polite"></div>
+        </div>
+        <div class="date-holder">
+          <label for="cab-entrega" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Data de Entrega <span class="muted">*</span></label>
+          <input type="date" id="cab-entrega" class="input" placeholder=" ">
+          <span class="fake-ph">dd/mm/aaaa</span>
+          <div id="cab-entrega-err" class="err-msg" aria-live="polite"></div>
+        </div>
+        <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Vendedor</label><select id="cab-vend" class="input"></select></div>
+        <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Responsável Aplicação</label><input id="cab-apl" class="input"></div>
+        <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Responsável Controle</label><input id="cab-ctrl" class="input"></div>
+        <div style="grid-column:1 / -1"><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Observação</label><input id="cab-obs" class="input"></div>
+      </div>
+    </section>
+    <section class="mb-6 card p-5 no-print">
+      <h3 style="font-weight:700;color:var(--slate-800);margin-bottom:1rem">Formulário por Linha</h3>
+      <!-- A) Identificação -->
+      <details>
+        <summary>A) Identificação <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div class="grid grid-fit">
+            <div><label for="os" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Nº OS <span class="muted">*</span></label><input id="os" class="input" aria-required="true"><div id="os-err" class="err-msg" aria-live="polite"></div></div>
+            <div><label for="cliente" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Cliente <span class="muted">*</span></label><input id="cliente" class="input" list="clientes-list" aria-required="true"><datalist id="clientes-list"></datalist><div id="cliente-err" class="err-msg" aria-live="polite"></div></div>
+            <div><label for="serv-grupo" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Serviço (Grupo) <span class="muted">*</span></label><select id="serv-grupo" class="input" aria-required="true"></select><div id="serv-grupo-err" class="err-msg" aria-live="polite"></div></div>
+            <div><label for="serv-sub" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Sub-Serviço <span class="muted">*</span></label><select id="serv-sub" class="input" aria-required="true" disabled></select><div id="serv-sub-err" class="err-msg" aria-live="polite"></div></div>
+          </div>
+        </div>
+      </details>
+      <!-- B) Pneu/Técnica -->
+      <details>
+        <summary>B) Pneu/Técnica <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div class="grid grid-fit">
+            <div><label for="qtd" class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Qtd Pneu (≥1) <span class="muted">*</span></label><input id="qtd" type="number" min="1" class="input" value="1" aria-required="true"><div id="qtd-err" class="err-msg" aria-live="polite"></div></div>
+            <div><label class="mb-2" for="marca" style="display:block;font-weight:600;color:var(--slate-700)">Marca Pneu</label><input id="marca" class="input"></div>
+            <div><label class="mb-2" for="dot" style="display:block;font-weight:600;color:var(--slate-700)">DOT (4)</label><input id="dot" class="input"></div>
+          </div>
+          <div class="mt-3" style="grid-column:1/-1">
+            <label class="mb-2" for="search-insumo" style="display:block;font-weight:600;color:var(--slate-700)">Buscar Insumo</label>
+            <input id="search-insumo" class="input" placeholder="Banda, medida, tipo...">
+          </div>
+          <div class="mt-3" style="grid-column:1/-1">
+            <label class="mb-2" for="select-insumo" style="display:block;font-weight:600;color:var(--slate-700)">Selecionar Insumo</label>
+            <select id="select-insumo" class="input"><option value="">Selecione um insumo</option></select>
+          </div>
+          <div class="grid grid-fit mt-3">
+            <div><label class="mb-2" for="banda" style="display:block;font-weight:600;color:var(--slate-700)">Banda</label><input id="banda" class="input"></div>
+            <div><label class="mb-2" for="largura" style="display:block;font-weight:600;color:var(--slate-700)">Largura</label><input id="largura" class="input"></div>
+            <div><label class="mb-2" for="tam" style="display:block;font-weight:600;color:var(--slate-700)">TAM</label><select id="tam" class="input"><option value="">Selecione</option><option>MICRO</option><option>P</option><option>M</option><option>G</option></select></div>
+            <div><label class="mb-2" for="medida" style="display:block;font-weight:600;color:var(--slate-700)">Medida</label><input id="medida" class="input"></div>
+          </div>
+          <div class="grid grid-fit mt-3">
+            <div><label class="mb-2" for="preco-tipo" style="display:block;font-weight:600;color:var(--slate-700)">Tipo de Preço</label><select id="preco-tipo" class="input"><option>Venda sem desconto</option><option>Valor Vendido</option></select></div>
+            <div><label class="mb-2" for="valor-unit" style="display:block;font-weight:600;color:var(--slate-700)">Valor Unitário <span class="muted">*</span></label><input id="valor-unit" class="input" value="R$ 0,00"><div id="valor-unit-err" class="err-msg" aria-live="polite"></div></div>
+          </div>
+          <div class="mt-4"><button id="btn-add-insumo" class="btn btn-emerald">Adicionar Insumo</button></div>
+          <div id="insumos-table-wrap" class="table-wrap mt-3">
+            <table class="text-sm">
+              <thead><tr><th>Qtd</th><th>Marca</th><th>DOT</th><th>Banda</th><th>Largura</th><th>TAM</th><th>Medida</th><th>Valor Unit.</th><th>Total</th><th>Ações</th></tr></thead>
+              <tbody id="insumos-body"></tbody>
+              <tfoot><tr><td colspan="8" style="font-weight:700">Total Bruto</td><td id="total-bruto-insumos">R$ 0,00</td><td></td></tr></tfoot>
+            </table>
+          </div>
+        </div>
+      </details>
+      <!-- C) Consumos -->
+      <details>
+        <summary>C) Consumos <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div class="grid grid-fit">
+            <div><label class="mb-2" for="ligacao" style="display:block;font-weight:600;color:var(--slate-700)">Ligação (UN)</label><input id="ligacao" type="number" min="0" class="input" value="0"></div>
+            <div><label class="mb-2" for="enchimento" style="display:block;font-weight:600;color:var(--slate-700)">Enchimento (KG)</label><input id="enchimento" type="number" min="0" step="0.01" class="input" value="0"></div>
+            <div><label class="mb-2" for="cola" style="display:block;font-weight:600;color:var(--slate-700)">Cola (KG)</label><input id="cola" type="number" min="0" step="0.01" class="input" value="0"></div>
+            <div><label class="mb-2" for="antiquebra" style="display:block;font-weight:600;color:var(--slate-700)">Antiquebra (KG)</label><input id="antiquebra" type="number" min="0" step="0.01" class="input" value="0"></div>
+            <div><label class="mb-2" for="manp" style="display:block;font-weight:600;color:var(--slate-700)">Manchão P (UN)</label><input id="manp" type="number" min="0" class="input" value="0"></div>
+            <div><label class="mb-2" for="mang" style="display:block;font-weight:600;color:var(--slate-700)">Manchão G (UN)</label><input id="mang" type="number" min="0" class="input" value="0"></div>
+            <div><label class="mb-2" for="tinta" style="display:block;font-weight:600;color:var(--slate-700)">Tinta (KG/ML)</label><input id="tinta" type="number" min="0" step="0.01" class="input" value="0"></div>
+            <div style="grid-column:1 / -1"><label class="mb-2" for="outros" style="display:block;font-weight:600;color:var(--slate-700)">Outros Insumos (item + unid + qtd)</label><input id="outros" class="input"></div>
+          </div>
+        </div>
+      </details>
+      <!-- D) Financeiro -->
+      <details id="sec-financeiro">
+        <summary>D) Financeiro <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div class="grid grid-fit">
+            <div>
+              <label class="mb-2" for="vbruto" style="display:block;font-weight:600;color:var(--slate-700)">Valor Bruto <span class="muted">*</span></label>
+              <input id="vbruto" class="input" value="R$ 0,00" aria-required="true" readonly>
+              <div id="vbruto-err" class="err-msg" aria-live="polite"></div>
+            </div>
+            <div>
+              <label class="mb-2" for="forma" style="display:block;font-weight:600;color:var(--slate-700)">Forma <span class="muted">*</span></label>
+              <select id="forma" class="input" aria-required="true">
+                <option value="">Selecione</option>
+                <option>PIX</option>
+                <option>Crédito</option>
+                <option>Débito</option>
+                <option>Dinheiro</option>
+                <option>Boleto</option>
+              </select>
+              <div id="forma-err" class="err-msg" aria-live="polite"></div>
+            </div>
+            <div>
+              <label class="mb-2" for="condicao" style="display:block;font-weight:600;color:var(--slate-700)">Condição <span class="muted">*</span></label>
+              <select id="condicao" class="input" disabled>
+                <option value="">— Nenhuma condição cadastrada —</option>
+              </select>
+              <div id="condicao-err" class="err-msg" aria-live="polite"></div>
+            </div>
+            <div id="grupo-maq" class="hidden" style="grid-column:1/-1">
+              <div class="grid grid-fit">
+                <div><label class="mb-2" for="bandeira" style="display:block;font-weight:600;color:var(--slate-700)">Bandeira</label><input id="bandeira" class="input"></div>
+                <div><label class="mb-2" for="produtoMaq" style="display:block;font-weight:600;color:var(--slate-700)">Condição</label><select id="produtoMaq" class="input"><option value="">Selecione</option><option>À vista</option><option>Parcelado</option></select></div>
+                <div><label class="mb-2" for="parcelas" style="display:block;font-weight:600;color:var(--slate-700)">Parcelas</label><input id="parcelas" type="number" min="1" class="input" value="0"></div>
+                <div><label class="mb-2" for="taxaPct" style="display:block;font-weight:600;color:var(--slate-700)">Taxa %</label><input id="taxaPct" class="input" value="0,00%"></div>
+              </div>
+            </div>
+            <div><label class="mb-2" for="desconto" style="display:block;font-weight:600;color:var(--slate-700)">Desconto (R$)</label><input id="desconto" class="input" value="R$ 0,00"></div>
+            <div><label class="mb-2" for="acrescimo" style="display:block;font-weight:600;color:var(--slate-700)">Acréscimo (R$)</label><input id="acrescimo" class="input" value="R$ 0,00"></div>
+            <div style="grid-column:1 / span 2">
+              <label class="mb-2" for="vliq" style="display:block;font-weight:600;color:var(--slate-700)">Valor Líquido (auto)</label>
+              <input id="vliq" class="input" readonly>
+            </div>
+          </div>
+        </div>
+      </details>
+      <!-- E) Status -->
+      <details>
+        <summary>E) Status <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div class="grid grid-fit">
+            <div><label class="mb-2" for="status" style="display:block;font-weight:600;color:var(--slate-700)">Status</label><select id="status" class="input"><option>Pendente de serviço</option><option>Pendente de entrega</option><option>Faturada</option><option>Cancelada</option></select></div>
+            <div style="grid-column:1 / -1"><label class="mb-2" for="obs" style="display:block;font-weight:600;color:var(--slate-700)">Obs (opc.)</label><input id="obs" class="input"></div>
+          </div>
+        </div>
+      </details>
+      <div class="mt-4" style="display:flex;flex-wrap:wrap;gap:.5rem">
+        <button id="btn-salvar-linha" class="btn btn-emerald">Salvar lançamento</button>
+        <button id="btn-limpar-linha" class="btn btn-ghost">Limpar</button>
+        <button id="btn-export-this" class="btn btn-sky hidden">Exportar PDF desta Ficha</button>
+      </div>
+    </section>
+    <!-- Tabela Saída -->
+    <section class="mb-6 card p-5">
+      <div class="print-header print-only"><strong>Relatório – Ficha de Saída</strong></div>
+      <div class="print-chips print-flex">
+        <span class="chip" id="chip-comp-saida"></span>
+        <span class="chip" id="chip-periodo-saida"></span>
+        <span class="chip" id="chip-linhas-saida"></span>
+        <span class="chip" id="chip-bruto-saida"></span>
+      </div>
+      <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:.5rem;flex-wrap:wrap">
+        <h3 style="font-weight:700;color:var(--slate-800)">Lista de lançamentos</h3>
+        <div style="display:flex;gap:.5rem;align-items:end;flex-wrap:wrap">
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Filtrar por dia</label><input id="flt-dia" type="date" class="input"></div>
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Filtrar por mês</label><input id="flt-mes" type="month" class="input"></div>
+          <button id="btn-clear-filtros-saida" class="btn btn-ghost">Limpar filtros</button>
+          <button id="btn-export-pdf-saida" class="btn btn-sky">Exportar PDF</button>
+        </div>
+      </div>
+      <div id="saida-empty" class="center" style="color:var(--slate-500);padding:2rem 0">
+        <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+        <p style="font-size:.9rem;margin:0">Nenhum lançamento</p>
+      </div>
+      <div id="saida-wrap" class="hidden table-wrap">
+        <table class="text-sm">
+          <thead><tr><th><input type="checkbox" id="select-all-saida"></th><th class="sortable" data-sort="data">Data Coleta/Serviço/Entrega</th><th class="sortable" data-sort="os">OS</th><th>Cliente</th><th>Serviço</th><th>#Pneus</th><th>Forma</th><th>Bruto</th><th>Líquido</th><th>Status</th><th class="no-print">Ações</th></tr></thead>
+          <tbody id="saida-body"></tbody>
+          <tfoot><tr><td colspan="7" style="font-weight:700">Total bruto</td><td id="saida-total-bruto">R$ 0,00</td><td id="saida-total-liq">R$ 0,00</td><td colspan="2"></td></tr></tfoot>
+        </table>
+      </div>
+    </section>
+  </section>
+  <!-- === FICHA DE ENTRADA === -->
+  <section id="view-entrada" class="hidden">
+    <section class="mb-6 card p-5 no-print">
+      <h3 style="font-weight:700;color:var(--slate-800);margin-bottom:1rem">Formulário de Entrada (estoque)</h3>
+      <div style="display:flex;gap:.5rem">
+        <button id="btn-upload-xml" class="btn btn-sky">Upload XML NF-e</button>
+        <button id="btn-entrada-manual" class="btn btn-ghost">Entrada Manual</button>
+      </div>
+      <input type="file" id="file-xml" accept=".xml" style="display:none;">
+      <div id="entrada-analise" class="hidden mt-4">
+        <h4 style="font-weight:700;color:var(--slate-800)">Análise da NF-e</h4>
+        <div class="grid grid-fit">
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Número NF</label><input id="analise-nfnumero" class="input" readonly></div>
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Fornecedor</label><input id="analise-fornecedor" class="input" readonly></div>
+          <div class="date-holder"><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Data NF</label><input id="analise-datanf" type="date" class="input" readonly></div>
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Total NF</label><input id="analise-total" class="input" readonly></div>
+        </div>
+        <div class="mt-3 table-wrap">
+          <table class="text-sm">
+            <thead><tr><th>Descrição</th><th>Qtd</th><th>Valor Unit.</th><th>Unidade</th><th>Subtotal</th></tr></thead>
+            <tbody id="analise-itens-body"></tbody>
+          </table>
+        </div>
+        <div class="mt-4" style="display:flex;gap:.5rem">
+          <button id="btn-salvar-analise" class="btn btn-emerald">Salvar NF</button>
+          <button id="btn-cancel-analise" class="btn btn-ghost">Cancelar</button>
+        </div>
+      </div>
+      <div id="entrada-manual" class="hidden mt-4">
+        <h4 style="font-weight:700;color:var(--slate-800)">Entrada Manual</h4>
+        <div class="grid grid-fit">
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Número NF</label><input id="manual-nfnumero" class="input"></div>
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Fornecedor</label><input id="manual-fornecedor" class="input"></div>
+          <div class="date-holder"><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Data NF</label><input id="manual-datanf" type="date" class="input" placeholder=" "><span class="fake-ph">dd/mm/aaaa</span></div>
+        </div>
+        <div class="mt-3">
+          <h5 style="font-weight:600;color:var(--slate-700);margin-bottom:.5rem">Adicionar Item</h5>
+          <div class="grid grid-fit">
+            <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Descrição</label><input id="manual-desc" class="input"></div>
+            <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Qtd</label><input id="manual-qtd" type="number" min="0" step="0.01" class="input" value="0"></div>
+            <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Valor Unit.</label><input id="manual-valorunit" class="input" value="R$ 0,00"></div>
+            <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Unidade</label><select id="manual-unidade" class="input"><option>L</option><option>KG</option><option>CX</option><option>BOBINA</option><option>UN</option></select></div>
+          </div>
+          <div class="mt-2"><button id="btn-add-item-manual" class="btn btn-sky">Adicionar Item</button></div>
+        </div>
+        <div class="mt-3 table-wrap">
+          <table class="text-sm">
+            <thead><tr><th>Descrição</th><th>Qtd</th><th>Valor Unit.</th><th>Unidade</th><th>Subtotal</th><th>Ações</th></tr></thead>
+            <tbody id="manual-itens-body"></tbody>
+          </table>
+        </div>
+        <div class="mt-4" style="display:flex;gap:.5rem">
+          <button id="btn-salvar-manual" class="btn btn-emerald">Salvar NF</button>
+          <button id="btn-cancel-manual" class="btn btn-ghost">Cancelar</button>
+        </div>
+      </div>
+    </section>
+    <section class="mb-6 card p-5">
+      <div class="print-header print-only"><strong>Relatório – Ficha de Entrada</strong></div>
+      <div class="print-chips print-flex">
+        <span class="chip" id="chip-comp-entrada"></span>
+        <span class="chip" id="chip-periodo-entrada"></span>
+        <span class="chip" id="chip-linhas-entrada"></span>
+        <span class="chip" id="chip-itens-entrada"></span>
+      </div>
+      <div class="no-print" style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem;gap:.5rem;flex-wrap:wrap">
+        <h3 style="font-weight:700;color:var(--slate-800)">Lista de NFs</h3>
+        <div style="display:flex;gap:.5rem;align-items:end;flex-wrap:wrap">
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Filtrar por dia</label><input id="flt-dia-ent" type="date" class="input"></div>
+          <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Filtrar por mês</label><input id="flt-mes-ent" type="month" class="input"></div>
+          <button id="btn-clear-filtros-entrada" class="btn btn-ghost">Limpar filtros</button>
+          <button id="btn-print-entrada" class="btn btn-sky">Exportar PDF</button>
+        </div>
+      </div>
+      <div id="entrada-empty" class="center" style="color:var(--slate-500);padding:2rem 0">
+        <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+        <p style="font-size:.9rem;margin:0">Nenhuma NF</p>
+      </div>
+      <div id="entrada-wrap" class="hidden table-wrap">
+        <table class="text-sm">
+          <thead><tr><th class="sortable" data-sort="nfNumero">NF</th><th class="sortable" data-sort="fornecedor">Fornecedor</th><th class="sortable" data-sort="dataNf">Data NF</th><th class="sortable" data-sort="total">Total</th><th>#Itens</th><th class="no-print">Ações</th></tr></thead>
+          <tbody id="entrada-body"></tbody>
+        </table>
+      </div>
+    </section>
+  </section>
+  <!-- === PARÂMETROS === -->
+  <section id="view-parametros" class="hidden">
+    <section class="mb-6 card p-5">
+      <details>
+        <summary>Metas e Parâmetros <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div class="grid grid-fit">
+            <div><label class="mb-2" for="mcomp" style="display:block;font-weight:600;color:var(--slate-700)">Competência</label><input type="month" id="mcomp" class="input"></div>
+            <div><label class="mb-2" for="dias" style="display:block;font-weight:600;color:var(--slate-700)">Dias trabalhados (mês)</label><input id="dias" type="number" min="0" class="input" value="0"></div>
+            <div style="grid-column:1/-1">
+              <div class="grid grid-fit">
+                <div><p style="font-weight:600;color:var(--slate-700);margin:.25rem 0 .5rem">Meta Recapagem/MÊS (pneus)</p><input id="recapMes" type="number" min="0" class="input" value="0"></div>
+                <div>
+                  <p style="font-weight:600;color:var(--slate-700);margin:.25rem 0 .5rem">Metas Faturamento/mês (R$)</p>
+                  <div class="grid grid-fit metas-grid">
+                    <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Bronze</label><input id="bronzeMes" class="input" value="R$ 0,00" aria-label="Meta Bronze (mês)" style="min-width:140px"></div>
+                    <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Prata</label><input id="prataMes" class="input" value="R$ 0,00" aria-label="Meta Prata (mês)" style="min-width:140px"></div>
+                    <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Ouro</label><input id="ouroMes" class="input" value="R$ 0,00" aria-label="Meta Ouro (mês)" style="min-width:140px"></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div style="grid-column:1/-1;margin-top:.5rem">
+              <p style="font-weight:600;color:var(--slate-700);margin:.25rem 0 .5rem">Metas por Serviço / mês (R$)</p>
+              <div class="grid metas-grid">
+                <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Consertos</label><input id="metaConsertoMes" class="input" value="R$ 0,00" aria-label="Meta Consertos (mês)"></div>
+                <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Borracharia</label><input id="metaBorrachariaMes" class="input" value="R$ 0,00" aria-label="Meta Borracharia (mês)"></div>
+                <div><label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Venda de Pneus</label><input id="metaVendaPneusMes" class="input" value="R$ 0,00" aria-label="Meta Venda de Pneus (mês)"></div>
+              </div>
+            </div>
+          </div>
+          <div class="mt-4"><button id="btn-meta-salvar" class="btn btn-emerald">Salvar</button></div>
+        </div>
+      </details>
+    </section>
+    <!-- Clientes -->
+    <section class="mb-6 card p-5">
+      <details>
+        <summary>Clientes <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:.5rem;flex-wrap:wrap">
+            <div style="flex:1 1 240px"><input id="busca-clientes" class="input" placeholder="Buscar cliente..."></div>
+            <div></div>
+          </div>
+          <div class="grid grid-fit">
+            <div><label class="mb-2" for="cnome" style="display:block;font-weight:600;color:var(--slate-700)">Nome/Razão</label><input id="cnome" class="input"></div>
+            <div><label class="mb-2" for="ccpf" style="display:block;font-weight:600;color:var(--slate-700)">CPF/CNPJ (opc.)</label><input id="ccpf" class="input"></div>
+            <div><label class="mb-2" for="ccid" style="display:block;font-weight:600;color:var(--slate-700)">Cidade/UF (opc.)</label><input id="ccid" class="input"></div>
+            <div>
+       <label class="mb-2" for="cresp" style="display:block;font-weight:600;color:var(--slate-700)">
+         Responsável (opc.)
+       </label>
+       <input id="cresp" class="input">
+     </div>
+            <div><label class="mb-2" for="ccont" style="display:block;font-weight:600;color:var(--slate-700)">Contato (opc.)</label><input id="ccont" class="input"></div>
+            <div><label class="mb-2" for="cati" style="display:block;font-weight:600;color:var(--slate-700)">Ativo</label><select id="cati" class="input"><option>S</option><option>N</option></select></div>
+          </div>
+          <div class="mt-3" style="display:flex;gap:.5rem;flex-wrap:wrap"><button id="btn-cliente-add" class="btn btn-emerald">Adicionar</button></div>
+          <div class="mt-4" id="clientes-empty" class="center" style="color:var(--slate-500);padding:1rem 0">
+            <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+            <p style="font-size:.9rem;margin:0">Nenhum cliente</p>
+          </div>
+          <div id="clientes-wrap" class="hidden table-wrap">
+            <table class="text-sm">
+              <thead><tr><th>Nome</th><th>CPF/CNPJ</th><th>Cidade/UF</th><th>Responsável</th><th>Contato</th><th>Ativo</th><th>Ações</th></tr></thead>
+              <tbody id="clientes-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    </section>
+    <!-- Vendedores -->
+    <section class="mb-6 card p-5">
+      <details>
+        <summary>Vendedores <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:.5rem;flex-wrap:wrap">
+            <div style="flex:1 1 240px"><input id="busca-vendedores" class="input" placeholder="Buscar vendedor..."></div>
+          </div>
+          <div class="grid grid-fit">
+            <div><label class="mb-2" for="vnome" style="display:block;font-weight:600;color:var(--slate-700)">Nome</label><input id="vnome" class="input"></div>
+            <div><label class="mb-2" for="vati" style="display:block;font-weight:600;color:var(--slate-700)">Status</label><select id="vati" class="input"><option value="Ativo">Ativo</option><option value="Inativo">Inativo</option></select></div>
+          </div>
+          <div class="mt-3" style="display:flex;gap:.5rem;flex-wrap:wrap"><button id="btn-vendedor-add" class="btn btn-emerald">Adicionar</button></div>
+          <div class="mt-4" id="vendedores-empty" class="center" style="color:var(--slate-500);padding:1rem 0">
+            <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+            <p style="font-size:.9rem;margin:0">Nenhum vendedor</p>
+          </div>
+          <div id="vendedores-wrap" class="hidden table-wrap">
+            <table class="text-sm">
+              <thead><tr><th>Nome</th><th>Status</th><th>Ações</th></tr></thead>
+              <tbody id="vendedores-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    </section>
+    <!-- Insumos de Recapagem -->
+    <section class="mb-6 card p-5">
+      <h3 style="font-weight:700;color:var(--slate-800);margin:0">Insumos de Recapagem</h3>
+      <div id="insumos-importado" class="mb-6">
+        <details>
+          <summary style="font-weight:400;color:var(--slate-800)">Insumos Importados <span class="muted">▸</span></summary>
+          <div class="p-4">
+            <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:.5rem;flex-wrap:wrap">
+              <div style="flex:1 1 240px"><input id="busca-insumos-importado" class="input" placeholder="Buscar por banda, medida, tipo..."></div>
+            </div>
+            <div class="grid grid-fit">
+              <div><label class="mb-2" for="filter-fornecedor-importado" style="display:block;font-weight:600;color:var(--slate-700)">Fornecedor</label><input id="filter-fornecedor-importado" class="input"></div>
+              <div><label class="mb-2" for="filter-banda-importado" style="display:block;font-weight:600;color:var(--slate-700)">Banda</label><input id="filter-banda-importado" class="input"></div>
+              <div><label class="mb-2" for="filter-largura-importado" style="display:block;font-weight:600;color:var(--slate-700)">Largura</label><input id="filter-largura-importado" class="input"></div>
+              <div><label class="mb-2" for="filter-tamanho-importado" style="display:block;font-weight:600;color:var(--slate-700)">Tamanho</label><input id="filter-tamanho-importado" class="input"></div>
+              <div><label class="mb-2" for="filter-sulco-importado" style="display:block;font-weight:600;color:var(--slate-700)">Sulco</label><input id="filter-sulco-importado" class="input"></div>
+              <div><label class="mb-2" for="filter-medida-importado" style="display:block;font-weight:600;color:var(--slate-700)">Medida</label><input id="filter-medida-importado" class="input"></div>
+              <div><label class="mb-2" for="filter-tipobanda-importado" style="display:block;font-weight:600;color:var(--slate-700)">Tipo Banda</label><input id="filter-tipobanda-importado" class="input"></div>
+              <div><label class="mb-2" for="filter-tipopneu-importado" style="display:block;font-weight:600;color:var(--slate-700)">Tipo Pneu</label><input id="filter-tipopneu-importado" class="input"></div>
+              <div><label class="mb-2" for="filter-vendasemdesc-min-importado" style="display:block;font-weight:600;color:var(--slate-700)">Venda s/ desc (min)</label><input id="filter-vendasemdesc-min-importado" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-vendasemdesc-max-importado" style="display:block;font-weight:600;color:var(--slate-700)">Venda s/ desc (max)</label><input id="filter-vendasemdesc-max-importado" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-vendaavista-min-importado" style="display:block;font-weight:600;color:var(--slate-700)">À vista (min)</label><input id="filter-vendaavista-min-importado" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-vendaavista-max-importado" style="display:block;font-weight:600;color:var(--slate-700)">À vista (max)</label><input id="filter-vendaavista-max-importado" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-custoinsumo-min-importado" style="display:block;font-weight:600;color:var(--slate-700)">Custo Insumo (min)</label><input id="filter-custoinsumo-min-importado" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-custoinsumo-max-importado" style="display:block;font-weight:600;color:var(--slate-700)">Custo Insumo (max)</label><input id="filter-custoinsumo-max-importado" type="number" class="input"></div>
+              <div><label class="mb-2" style="display:block;visibility:hidden">.</label><button id="btn-apply-filters-importado" class="btn btn-sky">Aplicar filtros</button></div>
+              <div><label class="mb-2" style="display:block;visibility:hidden">.</label><button id="btn-clear-filters-importado" class="btn btn-ghost">Limpar filtros</button></div>
+            </div>
+            <div class="mt-3" style="display:flex;gap:.5rem;flex-wrap:wrap"><button id="btn-importar-insumos" class="btn btn-emerald">Importar Planilha</button></div>
+            <input type="file" id="file-import-insumos" style="display:none;" accept=".xlsx">
+            <div class="mt-4" id="insumos-importado-list-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <h4 style="margin:0;font-weight:700;color:var(--slate-800)">Insumos cadastrados (importados)</h4>
+                <span class="pill"><span id="insumos-importado-count">0</span></span>
+              </div>
+              <button id="insumos-importado-toggle" class="btn btn-ghost" aria-expanded="false" title="Expandir/colapsar lista">▼</button>
+            </div>
+            <div class="mt-4" id="insumos-importado-empty" class="center" style="color:var(--slate-500);padding:1rem 0">
+              <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+              <p style="font-size:.9rem;margin:0">Nenhum insumo importado cadastrado</p>
+            </div>
+            <div id="insumos-importado-wrap" class="hidden table-wrap">
+              <div style="display:flex;gap:.5rem;margin-bottom:.5rem"><button id="btn-select-all-importado" class="btn btn-ghost">Selecionar todos</button><button id="btn-deselect-all-importado" class="btn btn-ghost">Deselecionar todos</button><button id="btn-edit-selected-importado" class="btn btn-sky">Editar selecionados</button><button id="btn-delete-selected-importado" class="btn btn-rose">Excluir selecionados</button></div>
+              <table class="text-sm">
+                <thead><tr>
+                  <th></th>
+                  <th>Fornecedor</th><th>Banda</th><th>Largura</th><th>Tamanho</th><th>Sulco</th><th>Medida</th><th>Tipo Banda</th><th>Tipo Pneu</th><th>Venda s/ desc</th><th>À vista</th><th>Custo Insumo</th><th>Ativo</th><th>Ações</th>
+                </tr></thead>
+                <tbody id="insumos-importado-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+      <div id="insumos-manual">
+        <details>
+          <summary style="font-weight:400;color:var(--slate-800)">Insumos Manuais <span class="muted">▸</span></summary>
+          <div class="p-4">
+            <div class="grid grid-fit">
+              <div><label class="mb-2" for="iFornecedor" style="display:block;font-weight:600;color:var(--slate-700)">Fornecedor (opc.)</label><input id="iFornecedor" class="input"></div>
+              <div><label class="mb-2" for="iBanda" style="display:block;font-weight:600;color:var(--slate-700)">Banda *</label><input id="iBanda" class="input"></div>
+              <div><label class="mb-2" for="iLargura" style="display:block;font-weight:600;color:var(--slate-700)">Largura *</label><input id="iLargura" class="input"></div>
+              <div><label class="mb-2" for="iTamanho" style="display:block;font-weight:600;color:var(--slate-700)">Tamanho *</label><input id="iTamanho" class="input" placeholder="Ex.: P, M, G"></div>
+              <div><label class="mb-2" for="iSulco" style="display:block;font-weight:600;color:var(--slate-700)">Sulco *</label><input id="iSulco" class="input"></div>
+              <div><label class="mb-2" for="iMedida" style="display:block;font-weight:600;color:var(--slate-700)">Medida Pneu *</label><input id="iMedida" class="input" placeholder="Ex.: 275/80R22.5"></div>
+              <div><label class="mb-2" for="iTipoBanda" style="display:block;font-weight:600;color:var(--slate-700)">Tipo Banda *</label><input id="iTipoBanda" class="input" placeholder="Ex.: B Borrachudo / Liso / Misto"></div>
+              <div><label class="mb-2" for="iTipoPneu" style="display:block;font-weight:600;color:var(--slate-700)">Tipo Pneu *</label><input id="iTipoPneu" class="input" placeholder="Ex.: B Comum / Empilhadeira / Radial"></div>
+              <div><label class="mb-2" for="iVendaSemDesc" style="display:block;font-weight:600;color:var(--slate-700)">Venda sem desconto *</label><input id="iVendaSemDesc" class="input" value="R$ 0,00"></div>
+              <div><label class="mb-2" for="iVendaAvista" style="display:block;font-weight:600;color:var(--slate-700)">Valor Vendido *</label><input id="iVendaAvista" class="input" value="R$ 0,00"></div>
+              <div><label class="mb-2" for="iCustoInsumo" style="display:block;font-weight:600;color:var(--slate-700)">Custo Insumo *</label><input id="iCustoInsumo" class="input" value="R$ 0,00"></div>
+              <div><label class="mb-2" for="iAtivo" style="display:block;font-weight:600;color:var(--slate-700)">Ativo *</label><select id="iAtivo" class="input"><option>S</option><option>N</option></select></div>
+            </div>
+            <div class="mt-3" style="display:flex;gap:.5rem;flex-wrap:wrap"><button id="btn-insumo-add" class="btn btn-emerald">Adicionar</button></div>
+            <div class="mt-4" id="insumos-manual-list-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+              <div style="display:flex;align-items:center;gap:.5rem">
+                <h4 style="margin:0;font-weight:700;color:var(--slate-800)">Insumos cadastrados (manuais)</h4>
+                <span class="pill"><span id="insumos-manual-count">0</span></span>
+              </div>
+              <button id="insumos-manual-toggle" class="btn btn-ghost" aria-expanded="false" title="Expandir/colapsar lista">▼</button>
+            </div>
+            <div style="display:flex;gap:.5rem;margin-bottom:.5rem"><button id="btn-select-all-manual" class="btn btn-ghost">Selecionar todos</button><button id="btn-deselect-all-manual" class="btn btn-ghost">Deselecionar todos</button><button id="btn-edit-selected-manual" class="btn btn-sky">Editar selecionados</button><button id="btn-delete-selected-manual" class="btn btn-rose">Excluir selecionados</button></div>
+            <div class="grid grid-fit">
+              <div><label class="mb-2" for="filter-fornecedor-manual" style="display:block;font-weight:600;color:var(--slate-700)">Fornecedor</label><input id="filter-fornecedor-manual" class="input"></div>
+              <div><label class="mb-2" for="filter-banda-manual" style="display:block;font-weight:600;color:var(--slate-700)">Banda</label><input id="filter-banda-manual" class="input"></div>
+              <div><label class="mb-2" for="filter-largura-manual" style="display:block;font-weight:600;color:var(--slate-700)">Largura</label><input id="filter-largura-manual" class="input"></div>
+              <div><label class="mb-2" for="filter-tamanho-manual" style="display:block;font-weight:600;color:var(--slate-700)">Tamanho</label><input id="filter-tamanho-manual" class="input"></div>
+              <div><label class="mb-2" for="filter-sulco-manual" style="display:block;font-weight:600;color:var(--slate-700)">Sulco</label><input id="filter-sulco-manual" class="input"></div>
+              <div><label class="mb-2" for="filter-medida-manual" style="display:block;font-weight:600;color:var(--slate-700)">Medida</label><input id="filter-medida-manual" class="input"></div>
+              <div><label class="mb-2" for="filter-tipobanda-manual" style="display:block;font-weight:600;color:var(--slate-700)">Tipo Banda</label><input id="filter-tipobanda-manual" class="input"></div>
+              <div><label class="mb-2" for="filter-tipopneu-manual" style="display:block;font-weight:600;color:var(--slate-700)">Tipo Pneu</label><input id="filter-tipopneu-manual" class="input"></div>
+              <div><label class="mb-2" for="filter-vendasemdesc-min-manual" style="display:block;font-weight:600;color:var(--slate-700)">Venda s/ desc (min)</label><input id="filter-vendasemdesc-min-manual" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-vendasemdesc-max-manual" style="display:block;font-weight:600;color:var(--slate-700)">Venda s/ desc (max)</label><input id="filter-vendasemdesc-max-manual" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-vendaavista-min-manual" style="display:block;font-weight:600;color:var(--slate-700)">À vista (min)</label><input id="filter-vendaavista-min-manual" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-vendaavista-max-manual" style="display:block;font-weight:600;color:var(--slate-700)">À vista (max)</label><input id="filter-vendaavista-max-manual" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-custoinsumo-min-manual" style="display:block;font-weight:600;color:var(--slate-700)">Custo Insumo (min)</label><input id="filter-custoinsumo-min-manual" type="number" class="input"></div>
+              <div><label class="mb-2" for="filter-custoinsumo-max-manual" style="display:block;font-weight:600;color:var(--slate-700)">Custo Insumo (max)</label><input id="filter-custoinsumo-max-manual" type="number" class="input"></div>
+              <div><label class="mb-2" style="display:block;visibility:hidden">.</label><button id="btn-apply-filters-manual" class="btn btn-sky">Aplicar filtros</button></div>
+              <div><label class="mb-2" style="display:block;visibility:hidden">.</label><button id="btn-clear-filters-manual" class="btn btn-ghost">Limpar filtros</button></div>
+            </div>
+            <div class="mt-4" id="insumos-manual-empty" class="center" style="color:var(--slate-500);padding:1rem 0">
+              <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+              <p style="font-size:.9rem;margin:0">Nenhum insumo manual cadastrado</p>
+            </div>
+            <div id="insumos-manual-wrap" class="hidden table-wrap">
+              <table class="text-sm">
+                <thead><tr>
+                  <th></th>
+                  <th>Fornecedor</th><th>Banda</th><th>Largura</th><th>Tamanho</th><th>Sulco</th><th>Medida</th><th>Tipo Banda</th><th>Tipo Pneu</th><th>Venda s/ desc</th><th>À vista</th><th>Custo Insumo</th><th>Ativo</th><th>Ações</th>
+                </tr></thead>
+                <tbody id="insumos-manual-body"></tbody>
+              </table>
+            </div>
+          </div>
+        </details>
+      </div>
+    </section>
+    <!-- Serviços (Grupo/Sub-Serviço) -->
+    <section class="mb-6 card p-5">
+      <details>
+        <summary>Serviços (Grupo/Sub-Serviço) <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.5rem;gap:.5rem;flex-wrap:wrap">
+            <div style="flex:1 1 240px"><input id="busca-servicos" class="input" placeholder="Buscar grupo ou sub-serviço..."></div>
+          </div>
+          <div class="grid grid-fit">
+            <div><label class="mb-2" for="srv-grupo-novo" style="display:block;font-weight:600;color:var(--slate-700)">Grupo</label><input id="srv-grupo-novo" class="input" placeholder="Ex.: Recapagem"></div>
+            <div><label class="mb-2" for="srv-sub-novo" style="display:block;font-weight:600;color:var(--slate-700)">Sub-Serviço</label><input id="srv-sub-novo" class="input" placeholder="Ex.: Bandinha"></div>
+            <div><label class="mb-2" style="display:block;visibility:hidden">.</label><button id="btn-srv-add" class="btn btn-emerald">Adicionar</button></div>
+          </div>
+          <div class="mt-3" id="srv-empty" class="center" style="color:var(--slate-500);padding:1rem 0">
+            <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+            <p style="font-size:.9rem;margin:0">Nenhum serviço cadastrado</p>
+          </div>
+          <div id="srv-wrap" class="hidden table-wrap">
+            <table class="text-sm" aria-label="Serviços cadastrados (Grupo/Sub)">
+              <thead><tr><th>Grupo</th><th>Sub-Serviço</th><th>Ativo</th><th>Ações</th></tr></thead>
+              <tbody id="srv-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    </section>
+    <!-- Forma de pagamento (Cadastro de CONDIÇÕES) -->
+    <section class="mb-6 card p-5">
+      <details>
+        <summary>Forma de pagamento <span class="muted">▸</span></summary>
+        <div class="p-4">
+          <div class="grid grid-fit">
+            <div style="grid-column:1 / -1"><h4 style="font-weight:600;color:var(--slate-700);margin:0 0 .75rem">Cadastro de condições</h4></div>
+            <div>
+              <label class="mb-2" for="fp-forma" style="display:block;font-weight:600;color:var(--slate-700)">Forma *</label>
+              <select id="fp-forma" class="input">
+                <option>PIX</option>
+                <option>Crédito</option>
+                <option>Débito</option>
+                <option>Dinheiro</option>
+                <option>Boleto</option>
+              </select>
+            </div>
+            <div>
+              <label class="mb-2" for="fp-desc" style="display:block;font-weight:600;color:var(--slate-700)">Descrição *</label>
+              <input id="fp-desc" class="input" placeholder="Ex.: Crédito Visa 6x 1,95%, Débito Elo, Boleto 1,95">
+              <div id="fp-desc-err" class="err-msg" aria-live="polite"></div>
+            </div>
+            <div>
+              <label class="mb-2" for="fp-pct" style="display:block;font-weight:600;color:var(--slate-700)">Taxa %</label>
+              <input id="fp-pct" class="input" value="0,00%">
+            </div>
+            <div id="fp-fixa-wrap">
+              <label class="mb-2" for="fp-fixa" style="display:block;font-weight:600;color:var(--slate-700)">Taxa fixa (R$)</label>
+              <input id="fp-fixa" class="input" value="R$ 1,95">
+            </div>
+          </div>
+          <div class="mt-3" style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button id="btn-fp-add" class="btn btn-emerald">Adicionar condição</button>
+          </div>
+          <div class="mt-4" id="fp-list-header" style="display:flex;justify-content:space-between;align-items:center;gap:.5rem">
+            <div style="display:flex;align-items:center;gap:.5rem">
+              <h4 style="margin:0;font-weight:700;color:var(--slate-800)">Condições cadastradas</h4>
+              <span class="pill"><span id="fp-count">0</span></span>
+            </div>
+            <button id="fp-toggle" class="btn btn-ghost" aria-expanded="false" title="Expandir/colapsar lista">▼</button>
+          </div>
+          <div class="mt-3" id="fp-empty" class="center" style="color:var(--slate-500);padding:1rem 0">
+            <div style="height:48px;width:48px;border-radius:999px;background:var(--slate-100)" class="center mb-3">—</div>
+            <p style="font-size:.9rem;margin:0">Nenhuma condição cadastrada</p>
+          </div>
+          <div id="fp-wrap" class="hidden table-wrap">
+            <table class="text-sm">
+              <thead><tr><th>Forma</th><th>Descrição</th><th>Taxa %</th><th>Taxa fixa (R$)</th><th>Ações</th></tr></thead>
+              <tbody id="fp-body"></tbody>
+            </table>
+          </div>
+        </div>
+      </details>
+    </section>
+  </section>
+</main>
+<!-- Modal -->
+<div id="modal" class="hidden modal-backdrop" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+  <div class="modal">
+    <header><h4 id="modal-title" style="margin:0;font-weight:800;color:var(--slate-800)">Visualizar</h4><button id="modal-close" class="btn-icon" aria-label="Fechar">✕</button></header>
+    <div class="content" id="modal-content"></div>
+    <footer id="modal-actions" style="padding:0 1.25rem 1rem;display:none;gap:.5rem"><button id="modal-confirm" class="btn btn-emerald">Confirmar</button><button id="modal-cancel" class="btn btn-ghost">Cancelar</button></footer>
+  </div>
+</div>
+<div class="toasts" id="toasts"></div>
+<div id="print-fichas" class="print-only"></div>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-analytics.js";
+const firebaseConfig = {
+  apiKey: "AIzaSyDq6z0u4K4fM5n4q5u6o7r8t9u0v1w2x3",
+  authDomain: "yourapp.firebaseapp.com",
+  projectId: "yourapp",
+  storageBucket: "yourapp.appspot.com",
+  messagingSenderId: "123456789012",
+  appId: "1:123456789012:web:abcdef123456",
+  measurementId: "G-ABCDEFGHIJ"
+};
+const app = initializeApp(firebaseConfig);
+const analytics = getAnalytics(app);
+/* ===== Helpers ===== */
+const BRL = new Intl.NumberFormat("pt-BR",{style:"currency",currency:"BRL"});
+const fmtMonthLong = new Intl.DateTimeFormat("pt-BR",{month:"long",year:"numeric"});
+const today = new Date(); const yyyy=today.getFullYear(); const mm=String(today.getMonth()+1).padStart(2,"0"); const dd=String(today.getDate()).padStart(2,"0");
+const TODAY_ISO = `${yyyy}-${mm}-${dd}`; const THIS_MONTH = `${yyyy}-${mm}`;
+const $=(s,c=document)=>c.querySelector(s); const $$=(s,c=document)=>Array.from(c.querySelectorAll(s));
+const safeArr = (a)=>Array.isArray(a)?a:[]; const clamp=(v,min,max)=>Math.min(max,Math.max(min,v));
+function escapeHtml(s){return String(s).replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#39;"}[m]));}
+function toMonthStr(d){return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`; }
+function startOfMonth(yyyymm){ const [y,m]=yyyymm.split("-").map(Number); return `${y}-${String(m).padStart(2,"0")}-01`; }
+function endOfMonth(yyyymm){ const [y,m]=yyyymm.split("-").map(Number); const last=new Date(y,m,0).getDate(); return `${y}-${String(m).padStart(2,"0")}-${String(last).padStart(2,"0")}`; }
+function monthNamePt(yyyymm){ const [y,m]=yyyymm.split("-").map(Number); const d=new Date(y,m-1,1); return fmtMonthLong.format(d); }
+function formatDateDisplay(iso){ if(!iso) return ""; const [Y,M,D]=iso.split("-"); return `${D}/${M}/${Y}`; }
+function parseISOorBR(dateStr){
+  if(!dateStr) return null;
+  if(/^\d{4}-\d{2}-\d{2}$/.test(dateStr)) return dateStr;
+  if(/^\d{2}\/\d{2}\/\d{4}$/.test(dateStr)){ const [d,m,y]=dateStr.split("/"); return `${y}-${m}-${d}`; }
+  return null;
+}
+function maskBRLInput(raw){ const digits=(raw||"").replace(/\D/g,""); const number=Number(digits||0); const cents=(number/100).toFixed(2); return BRL.format(Number(cents)); }
+function parseBRL(str){ if(str==null) return 0; const s=String(str).replace(/[^0-9,-]/g,"").replace(/\./g,"").replace(",","."); const n=Number(s); return Number.isFinite(n)?Math.round(n * 100) / 100:0; }
+function maskPctInput(raw){ const digits=(raw||"").replace(/\D/g,""); const v=((Number(digits||0)/100).toFixed(2)); const [i,d]=String(v).split("."); return `${i},${d}%`; }
+function parsePct(str){ if(!str) return 0; const clean=String(str).replace(/[^0-9,-]/g,"").replace(/\./g,"").replace(",","."); const n=Number(clean); return Number.isFinite(n)?n/100:0; }
+function parsePercNumber(str){ return parsePct(str)*100; }
+function uid(){ return Math.random().toString(36).slice(2,9); }
+function classToggle(el,flag,cls="hidden"){ if(el) el.classList.toggle(cls,!flag); }
+function addToast(message,type="success"){
+  const wrap=$("#toasts"); const t=document.createElement("div"); t.className="toast";
+  if(type==="error") t.style.borderColor="var(--rose-200)";
+  if(type==="info") t.style.borderColor="var(--sky-200)";
+  const dot=document.createElement("div"); dot.className="dot";
+  if(type==="error") dot.style.background="var(--rose-700)";
+  if(type==="info") dot.style.background="var(--sky-500)";
+  const msg=document.createElement("div"); msg.style.flex="1"; msg.innerHTML=message;
+  const btn=document.createElement("button"); btn.textContent="✕"; btn.className="btn btn-ghost"; btn.style.padding=".1rem .5rem";
+  btn.addEventListener("click",()=>wrap.removeChild(t));
+  t.appendChild(dot); t.appendChild(msg); t.appendChild(btn); wrap.appendChild(t);
+  setTimeout(()=>{ if(t.parentNode===wrap) wrap.removeChild(t); },3000);
+}
+const store = {
+  ok: (()=>{ try{ const k="__t"; localStorage.setItem(k,"1"); localStorage.removeItem(k); return true; }catch(e){ return false; } })(),
+  get(key, fallback){ if(!this.ok) return fallback; try{ const v=localStorage.getItem(key); return v? JSON.parse(v):fallback; }catch(e){ return fallback; } },
+  set(key, val){ if(!this.ok) return; try{ localStorage.setItem(key, JSON.stringify(val)); }catch(e){} }
+};
+const nfDebounce = (fn, wait=120)=>{ let t; return (...args)=>{ clearTimeout(t); t=setTimeout(()=>fn(...args), wait); }; };
+function slugify(str){
+  return String(str||"")
+    .normalize("NFD").replace(/\p{Diacritic}/gu,"")
+    .toLowerCase()
+    .replace(/[^\w\s/-]+/g,"")
+    .replace(/[\/\s]+/g,"-")
+    .replace(/-+/g,"-")
+    .replace(/-+/g,"-")
+    .replace(/^-|-$/g,"");
+}
+function normText(s){ return (s||"").toString().normalize("NFD").replace(/\p{Diacritic}/gu,"").toLowerCase().trim(); }
+/* ===== State ===== */
+const state = {
+  tab:"parametros",
+  competenciaBase: THIS_MONTH,
+  metas: store.get("metas", {}),
+  clientes: store.get("clientes", []),
+  vendedores: store.get("vendedores", []),
+  entradaItens: store.get("entradaItens", []),
+  insumosImportado: store.get("insumosImportado", []),
+  insumosManual: store.get("insumosManual", []),
+  insumosImportadoCollapsed: store.get("insumosImportadoCollapsed", false),
+  insumosManualCollapsed: store.get("insumosManualCollapsed", true),
+  srvGrupos: store.get("srvGrupos", []),
+  srvSubs: store.get("srvSubs", []),
+  payConds: store.get("payConds", []),
+  payCondsCollapsed: store.get("payCondsCollapsed", true),
+  saidaLinhas: store.get("saidaLinhas", []),
+  editingId:"",
+  periodo:{de:"",ate:"",ativo:false},
+  filtroServico:"ALL",
+  filtroVendedor: store.get("filtroVendedor", "ALL"),
+  filtroSaida:{ dia:"", mes:"", sortKey:"data", sortDir:"desc"},
+  filtroEntrada:{ dia:"", mes:"", sortKey:"dataNf", sortDir:"asc"},
+  clientSearch:"",
+  nfSort:{ key:"data", dir:"desc" },
+  nfSearchTerm:"",
+  nfCollapsed:true,
+  nfFiltroStatus: "Todos",
+  kpiServicoSel: store.get("kpiServicoSel","consertos"),
+  insumosImportadoFilters: {},
+  insumosManualFilters: {},
+  insumosImportadoSelected: new Set(),
+  insumosManualSelected: new Set(),
+  canceladasCollapsed: store.get("canceladasCollapsed", true),
+  tempManualItens: [],
+  editingEntradaId: "",
+  parsedNFe: null,
+  tempInsumos: [],
+  editingInsumoIndex: -1,
+  mixFormaFilter: "",
+  selectedFichasSaida: new Set(),
+  loadedUpdatedAt: null
+};
+function persistAll(){
+  store.set("metas", state.metas);
+  store.set("clientes", state.clientes);
+  store.set("vendedores", state.vendedores);
+  store.set("srvGrupos", state.srvGrupos);
+  store.set("srvSubs", state.srvSubs);
+  store.set("payConds", state.payConds);
+  store.set("saidaLinhas", state.saidaLinhas);
+  store.set("entradaItens", state.entradaItens);
+  store.set("insumosImportado", state.insumosImportado);
+  store.set("insumosManual", state.insumosManual);
+  store.set("payCondsCollapsed", state.payCondsCollapsed);
+  store.set("kpiServicoSel", state.kpiServicoSel);
+  store.set("filtroVendedor", state.filtroVendedor);
+  store.set("insumosImportadoCollapsed", state.insumosImportadoCollapsed);
+  store.set("insumosManualCollapsed", state.insumosManualCollapsed);
+  store.set("canceladasCollapsed", state.canceladasCollapsed);
+}
+/* ===== Seed inicial de Serviços ===== */
+function ensureSrvSeed(){
+  if(safeArr(state.srvGrupos).length || safeArr(state.srvSubs).length) return;
+  const base = [
+    { g:"Consertos", subs:["Manchões","Vulcanização"] },
+    { g:"Recapagem", subs:["Bandinha","Manchões"] },
+    { g:"Venda Pneus", subs:["Compra e Revenda"] },
+    { g:"Borracharia", subs:["Rodízio","Montagem"] }
+  ];
+  base.forEach(item=>{
+    const gSlug = slugify(item.g); const gId = `srvGrp-${gSlug}`;
+    state.srvGrupos.push({id:gId,label:item.g,ativo:"S"});
+    item.subs.forEach(s=>{
+      const sId = `srvSub-${gSlug}-${slugify(s)}`;
+      state.srvSubs.push({id:sId,grupoId:gId,label:s,ativo:"S"});
+    });
+  });
+  persistAll();
+}
+/* ===== Util taxonomia ===== */
+function getGrupoById(id){ return safeArr(state.srvGrupos).find(g=>g.id===id) || null; }
+function getSubById(id){ return safeArr(state.srvSubs).find(s=>s.id===id) || null; }
+function activeSubsByGrupo(grupoId){ return safeArr(state.srvSubs).filter(s=>s.grupoId===grupoId && s.ativo==="S"); }
+function activeGrupos(){ return safeArr(state.srvGrupos).filter(g=>g.ativo==="S" && activeSubsByGrupo(g.id).length>0); }
+/* ===== Tabs ===== */
+function openTab(id){
+  $$(".tab").forEach(b=>b.setAttribute("aria-selected", b.dataset.tab===id ? "true" : "false"));
+  $("#view-painel").classList.toggle("hidden",id!=="painel");
+  $("#view-saida").classList.toggle("hidden",id!=="saida");
+  $("#view-entrada").classList.toggle("hidden",id!=="entrada");
+  $("#view-parametros").classList.toggle("hidden",id!=="parametros");
+  state.tab=id; renderAll();
+}
+$$(".tab").forEach(btn=>{ btn.addEventListener("click",()=>openTab(btn.dataset.tab)); });
+/* ===== Competência / Período ===== */
+const de=$("#periodo-de"), ate=$("#periodo-ate"), compRead=$("#comp-readonly");
+function currentCompetencia(){ return state.periodo.ativo ? (parseISOorBR(state.periodo.de)||startOfMonth(state.competenciaBase)).slice(0,7) : (state.competenciaBase||THIS_MONTH); }
+function setCompetenciaLabel(){ const yyyymm=currentCompetencia(); compRead.value=monthNamePt(yyyymm)||monthNamePt(THIS_MONTH); }
+function navMonth(delta){
+  const [y,m]=currentCompetencia().split("-").map(Number);
+  const d=new Date(y,m-1,1); d.setMonth(d.getMonth()+delta);
+  const newMonth = toMonthStr(d);
+  state.competenciaBase = newMonth;
+  de.value = startOfMonth(newMonth);
+  ate.value = endOfMonth(newMonth);
+  state.periodo={de:"",ate:"",ativo:false};
+  setCompetenciaLabel();
+  renderAll();
+}
+$("#btn-comp-prev").addEventListener("click",()=>navMonth(-1));
+$("#btn-comp-next").addEventListener("click",()=>navMonth(1));
+function maybeAutoPeriodo(){
+  const a=parseISOorBR(de.value); const b=parseISOorBR(ate.value);
+  if(a && b && a<=b){ state.periodo={de:a,ate:b,ativo:true}; }
+  else{ state.periodo={de:a||"",ate:b||"",ativo:false}; }
+  setCompetenciaLabel(); renderAll();
+}
+$("#btn-ativar-periodo").addEventListener("click",maybeAutoPeriodo);
+["input","change"].forEach(ev=>{ de.addEventListener(ev,maybeAutoPeriodo); ate.addEventListener(ev,maybeAutoPeriodo); });
+$("#btn-limpar-periodo").addEventListener("click",()=>{ state.periodo={de:"",ate:"",ativo:false}; de.value=""; ate.value=""; setCompetenciaLabel(); renderAll(); });
+/* ===== Filtro Serviço (Painel) ===== */
+const filtroServEl = $("#filtro-servico");
+function hydrateServicoOptions(){
+  if(!filtroServEl) return;
+  const cur = state.filtroServico || "ALL";
+  const opts = [];
+  opts.push({v:"ALL", t:"Todos"});
+  activeGrupos()
+    .sort((a,b)=>a.label.localeCompare(b.label,'pt-BR'))
+    .forEach(g=>opts.push({v:`G:${g.id}`, t:g.label}));
+  activeGrupos().forEach(g=>{
+    activeSubsByGrupo(g.id)
+      .sort((a,b)=>a.label.localeCompare(b.label,'pt-BR'))
+      .forEach(s=>opts.push({v:`S:${s.id}`, t:`${g.label} – ${s.label}`}));
+  });
+  filtroServEl.innerHTML="";
+  opts.forEach(o=>{ const el=document.createElement("option"); el.value=o.v; el.textContent=o.t; if(o.v===cur) el.selected=true; filtroServEl.appendChild(el); });
+  if(!opts.some(o=>o.v===cur)){ state.filtroServico="ALL"; filtroServEl.value="ALL"; }
+}
+filtroServEl.addEventListener("change",(e)=>{ state.filtroServico = e.target.value || "ALL"; renderAll(); });
+/* ===== Saída – DOM refs & handlers ===== */
+const saidaDOM={
+  coleta:$("#cab-coleta"), servico:$("#cab-servico"), entrega:$("#cab-entrega"),
+  vend:$("#cab-vend"), apl:$("#cab-apl"), ctrl:$("#cab-ctrl"), obsCab:$("#cab-obs"),
+  os:$("#os"), cliente:$("#cliente"),
+  srvGrupo:$("#serv-grupo"), srvSub:$("#serv-sub"),
+  qtd:$("#qtd"),
+  marca:$("#marca"), dot:$("#dot"), banda:$("#banda"), largura:$("#largura"), tam:$("#tam"), medida:$("#medida"),
+  searchInsumo:$("#search-insumo"), selectInsumo:$("#select-insumo"),
+  precoTipo:$("#preco-tipo"), valorUnit:$("#valor-unit"),
+  ligacao:$("#ligacao"), enchimento:$("#enchimento"), cola:$("#cola"), antiquebra:$("#antiquebra"), manp:$("#manp"), mang:$("#mang"), tinta:$("#tinta"), outros:$("#outros"),
+  vbruto:$("#vbruto"), forma:$("#forma"), cond:$("#condicao"),
+  grupoMaq:$("#grupo-maq"), bandeira:$("#bandeira"), produtoMaq:$("#produtoMaq"), parcelas:$("#parcelas"), taxaPct:$("#taxaPct"),
+  desconto:$("#desconto"), acrescimo:$("#acrescimo"), vliq:$("#vliq"),
+  status:$("#status"), obs:$("#obs"),
+  err:{ os:$("#os-err"), cliente:$("#cliente-err"), srvGrupo:$("#serv-grupo-err"), srvSub:$("#serv-sub-err"), qtd:$("#qtd-err"), valorUnit:$("#valor-unit-err"), vbruto:$("#vbruto-err"), forma:$("#forma-err"), cond:$("#condicao-err"), coleta:$("#cab-coleta-err"), servico:$("#cab-servico-err"), entrega:$("#cab-entrega-err") }
+};
+["coleta","servico","entrega"].forEach(k=>{ const el=saidaDOM[k]; if(el) el.value=TODAY_ISO; });
+saidaDOM.forma.addEventListener("change",()=>{ populateCondicoesForForma(); classToggle(saidaDOM.grupoMaq, false ,"hidden"); previewLiquido(); clearErr("forma"); });
+saidaDOM.cond.addEventListener("change",()=>{ previewLiquido(); clearErr("cond"); });
+["desconto","acrescimo"].forEach(id=>{ const el=saidaDOM[id]; el.addEventListener("input",()=>{ el.value=maskBRLInput(el.value); previewLiquido(); }); });
+saidaDOM.taxaPct.addEventListener("input",()=>{ saidaDOM.taxaPct.value = maskPctInput(saidaDOM.taxaPct.value); previewLiquido(); });
+["cliente","os"].forEach(k=>saidaDOM[k].addEventListener("input",()=>clearErr(k)));
+["coleta","servico","entrega"].forEach(k=>{ const el=saidaDOM[k]; el.addEventListener("change",()=>{ clearErr(k); }); });
+saidaDOM.qtd.addEventListener("input",()=>clearErr("qtd"));
+saidaDOM.valorUnit.addEventListener("input",()=>{ saidaDOM.valorUnit.value=maskBRLInput(saidaDOM.valorUnit.value); clearErr("valorUnit"); });
+/* ===== Cascata Grupo/Sub no formulário ===== */
+function fillGrupoOptions(){
+  const sel = saidaDOM.srvGrupo;
+  const grupos = activeGrupos().sort((a,b)=>a.label.localeCompare(b.label,'pt-BR'));
+  sel.innerHTML="";
+  if(!grupos.length){
+    const o=document.createElement("option"); o.value=""; o.textContent="— Nenhum grupo ativo —"; sel.disabled=true; sel.appendChild(o);
+  }else{
+    sel.disabled=false;
+    const head=document.createElement("option"); head.value=""; head.textContent="Selecione o grupo"; sel.appendChild(head);
+    grupos.forEach(g=>{ const o=document.createElement("option"); o.value=g.id; o.textContent=g.label; sel.appendChild(o); });
+  }
+}
+function fillSubOptions(grupoId){
+  const sel = saidaDOM.srvSub;
+  sel.innerHTML="";
+  if(!grupoId){ sel.disabled=true; const o=document.createElement("option"); o.value=""; o.textContent="— Selecione o grupo —"; sel.appendChild(o); return; }
+  const subs = activeSubsByGrupo(grupoId).sort((a,b)=>a.label.localeCompare(b.label,'pt-BR'));
+  if(!subs.length){ sel.disabled=true; const o=document.createElement("option"); o.value=""; o.textContent="— Sem sub-serviços ativos —"; sel.appendChild(o); return; }
+  sel.disabled=false;
+  const head=document.createElement("option"); head.value=""; head.textContent="Selecione o sub-serviço"; sel.appendChild(head);
+  subs.forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.label; sel.appendChild(o); });
+}
+saidaDOM.srvGrupo.addEventListener("change",()=>{ fillSubOptions(saidaDOM.srvGrupo.value||""); clearErr("srvGrupo"); clearErr("srvSub"); });
+saidaDOM.srvSub.addEventListener("change",()=>clearErr("srvSub"));
+function refreshSrvCascata(){ fillGrupoOptions(); fillSubOptions(saidaDOM.srvGrupo.value||""); }
+/* ===== Condições – helpers ===== */
+function getCondById(id){ return safeArr(state.payConds).find(c=>c.id===id) || null; }
+function condicoesPorForma(forma){
+  const f=(forma||"").toLowerCase();
+  return safeArr(state.payConds).filter(c=>(c.forma||"").toLowerCase()===f);
+}
+function populateCondicoesForForma(){
+  const forma=(saidaDOM.forma.value||"").trim();
+  const sel=saidaDOM.cond;
+  sel.innerHTML="";
+  const conds = condicoesPorForma(forma);
+  if(!conds.length){
+    sel.disabled=true;
+    const o=document.createElement("option"); o.value=""; o.textContent="— Nenhuma condição cadastrada —"; sel.appendChild(o);
+  }else{
+    sel.disabled=false;
+    const head=document.createElement("option"); head.value=""; head.textContent="Selecione a condição"; sel.appendChild(head);
+    conds.forEach(c=>{ const o=document.createElement("option"); o.value=c.id; o.textContent=c.descricao; sel.appendChild(o); });
+  }
+}
+/* ===== Preview Líquido com CONDIÇÃO ===== */
+function previewLiquido(){
+  const bruto=parseBRL(saidaDOM.vbruto.value||"R$ 0,00");
+  const desc =parseBRL(saidaDOM.desconto.value||"R$ 0,00");
+  const acr =parseBRL(saidaDOM.acrescimo.value||"R$ 0,00");
+  const base=Math.max(0,bruto-desc+acr);
+  const forma=(saidaDOM.forma.value||"").trim();
+  const condId = (saidaDOM.cond.value||"").trim();
+  let liq = base;
+  if(condId && !saidaDOM.cond.disabled){
+    const c = getCondById(condId);
+    if(c){
+      if(forma==="Boleto"){
+        const fixa = Number(c.taxaFixa||0);
+        liq = base - fixa;
+      }else{
+        const perc = clamp(Number(c.taxaPerc||0),0,100);
+        liq = base - (base*(perc/100));
+      }
+    }
+  }
+  if(liq<0){ addToast("Valor Líquido negativo bloqueado.", "error"); liq=0; }
+  saidaDOM.vliq.value=BRL.format(liq);
+}
+/* ===== Validação (FIX: Condição só quando houver opções) ===== */
+function setErr(field,msg){ const el=saidaDOM[field]; const err=saidaDOM.err[field]; if(el){ el.classList.add("err"); } if(err){ err.innerHTML=msg||""; } }
+function clearErr(field){ const el=saidaDOM[field]; const err=saidaDOM.err[field]; if(el){ el.classList.remove("err"); } if(err){ err.textContent=""; } }
+function validateSaida(){
+  let first=null, ok=true;
+  const osVal=(saidaDOM.os.value||"").trim();
+  if(!osVal){ setErr("os","Informe um número de OS válido e não repetido."); ok=false; first=first||saidaDOM.os; }
+  else{
+    const dup = state.saidaLinhas.some(l=> (l.os||"").trim().toLowerCase()===osVal.toLowerCase() && l.id!==state.editingId);
+    if(dup){ setErr("os","Informe um número de OS válido e não repetido."); ok=false; first=first||saidaDOM.os; } else clearErr("os");
+  }
+  const cliVal=(saidaDOM.cliente.value||"").trim();
+  if(!cliVal){ setErr("cliente","Informe o Cliente."); ok=false; first=first||saidaDOM.cliente; } else {
+    const exists = state.clientes.some(c => normText(c.nome) === normText(cliVal));
+    if(!exists){ setErr("cliente","Cliente não cadastrado."); ok=false; first=first||saidaDOM.cliente; } else clearErr("cliente");
+  }
+  const gId=(saidaDOM.srvGrupo.value||""); if(!gId){ setErr("srvGrupo","Selecione o Grupo."); ok=false; first=first||saidaDOM.srvGrupo; } else clearErr("srvGrupo");
+  const sId=(saidaDOM.srvSub.value||""); if(!sId){ setErr("srvSub","Selecione o Sub-Serviço."); ok=false; first=first||saidaDOM.srvSub; } else clearErr("srvSub");
+  const isRecap = saidaDOM.srvGrupo.value === 'srvGrp-recapagem';
+  if(isRecap && state.tempInsumos.length === 0){ addToast("Adicione ao menos um insumo para Recapagem.", "error"); ok=false; }
+  const coleta = parseISOorBR(saidaDOM.coleta.value);
+  const servico = parseISOorBR(saidaDOM.servico.value);
+  const entrega = parseISOorBR(saidaDOM.entrega.value);
+  const status = saidaDOM.status.value;
+  if(isRecap){
+    if(status === "Pendente de serviço" && !coleta){ setErr("coleta","Informe a Data da Coleta."); ok=false; first=first||saidaDOM.coleta; } else clearErr("coleta");
+    if(status === "Pendente de entrega" && !servico){ setErr("servico","Informe a Data de Serviço."); ok=false; first=first||saidaDOM.servico; } else clearErr("servico");
+    if((status === "Faturada" || status === "Cancelada") && !entrega){ setErr("entrega","Informe a Data de Entrega."); ok=false; first=first||saidaDOM.entrega; } else clearErr("entrega");
+    if(ok && coleta && servico && entrega && (coleta > servico || servico > entrega || coleta > entrega)){ addToast("Datas inválidas: Coleta ≤ Serviço ≤ Entrega.", "error"); setErr("coleta","Datas inválidas."); setErr("servico","Datas inválidas."); setErr("entrega","Datas inválidas."); ok=false; first=first||saidaDOM.coleta; }
+  } else {
+    clearErr("coleta"); clearErr("servico"); clearErr("entrega");
+  }
+  if(parseBRL(saidaDOM.vbruto.value)<=0){ setErr("vbruto","Valor Bruto deve ser >0."); ok=false; first=first||saidaDOM.vbruto; } else clearErr("vbruto");
+  const formaSel=(saidaDOM.forma.value||"").trim(); if(!formaSel){ setErr("forma","Selecione a forma de pagamento."); ok=false; first=first||saidaDOM.forma; } else clearErr("forma");
+  if(!saidaDOM.cond.disabled && !saidaDOM.cond.value){ setErr("cond","Selecione a condição."); ok=false; first=first||saidaDOM.cond; } else clearErr("cond");
+  if(first){ first.scrollIntoView({behavior:"smooth",block:"center"}); first.focus(); }
+  return ok;
+}
+/* ===== Saída – Form helpers ===== */
+$("#btn-limpar-linha").addEventListener("click",()=>{ state.editingId=""; state.tempInsumos=[]; setSaidaForm(initSaidaForm()); $("#os").focus(); renderTempInsumosTable(); classToggle($("#btn-export-this"),false); });
+$("#btn-salvar-linha").addEventListener("click",async ()=>{
+  if(!validateSaida()) return;
+  const nova = getSaidaForm();
+  nova.dataColeta = parseISOorBR(saidaDOM.coleta.value)||TODAY_ISO;
+  nova.dataServico = parseISOorBR(saidaDOM.servico.value)||TODAY_ISO;
+  nova.dataEntrega = parseISOorBR(saidaDOM.entrega.value)||TODAY_ISO;
+  nova.insumos = state.tempInsumos.slice();
+  if(saidaDOM.srvGrupo.value === 'srvGrp-recapagem') {
+    nova.custoUsado = nova.insumos.reduce((s,i)=>s + i.qtd * i.custo,0);
+  } else {
+    nova.custoUsado = 0;
+  }
+  nova.updatedAt = new Date().toISOString();
+  if(state.editingId){
+    const current = state.saidaLinhas.find(l=>l.id===state.editingId);
+    if(current && current.updatedAt !== state.loadedUpdatedAt){
+      addToast("A ficha foi alterada por outra sessão. Recarregue antes de salvar.","error");
+      return;
+    }
+    nova.id = state.editingId;
+    state.saidaLinhas = state.saidaLinhas.map(l=>l.id===state.editingId?nova:l);
+    state.editingId="";
+    addToast("Lançamento editado.");
+  }else{
+    nova.id=uid();
+    state.saidaLinhas=[nova, ...state.saidaLinhas];
+    addToast("Lançamento salvo.");
+  }
+  persistAll();
+  setSaidaForm(initSaidaForm());
+  state.tempInsumos=[];
+  renderTempInsumosTable();
+  renderAll();
+  hydrateServicoOptions();
+  classToggle($("#btn-export-this"),false);
+});
+function initSaidaForm(){
+  return {
+    dataColeta:TODAY_ISO, dataServico:TODAY_ISO, dataEntrega:TODAY_ISO,
+    vendedorId:"", vendedorNome:"", respAplicacao:"", respControle:"", obsCab:"",
+    os:"", cliente:"", srv_grupoId:"", srv_grupoLabel:"", srv_subId:"", srv_subLabel:"", servico:"",
+    marca:"", dot:"", banda:"", largura:"", tam:"", medida:"",
+    ligacao:0, enchimento:0, cola:0, antiquebra:0, manchaoP:0, manchaoG:0, tinta:0, outrosInsumos:"",
+    valorBruto:"R$ 0,00", forma:"", condicaoId:"", condicaoDesc:"",
+    bandeira:"", produtoMaquininha:"", parcelas:0, taxaPct:"0,00%", desconto:"R$ 0,00", acrescimo:"R$ 0,00",
+    status:"Pendente de serviço", obs:"", custoUsado:0, insumos:[]
+  };
+}
+function carregarFichaSaidaParaEdicao(idFicha){
+  const f = state.saidaLinhas.find(l=>l.id===idFicha);
+  if(!f) return;
+  state.loadedUpdatedAt = f.updatedAt;
+  setSaidaForm(f);
+  $("#os").focus();
+  classToggle($("#btn-export-this"),true);
+}
+function setSaidaForm(f){
+  saidaDOM.coleta.value = f.dataColeta||TODAY_ISO;
+  saidaDOM.servico.value = f.dataServico||TODAY_ISO;
+  saidaDOM.entrega.value = f.dataEntrega||TODAY_ISO;
+  populateVendedoresSelect();
+  saidaDOM.vend.value = f.vendedorId||"";
+  saidaDOM.apl.value = f.respAplicacao||"";
+  saidaDOM.ctrl.value = f.respControle||"";
+  saidaDOM.obsCab.value = f.obsCab||"";
+  saidaDOM.os.value=f.os||""; saidaDOM.cliente.value=f.cliente||"";
+  saidaDOM.marca.value=f.marca||""; saidaDOM.dot.value=f.dot||""; saidaDOM.banda.value=f.banda||""; saidaDOM.largura.value=f.largura||""; saidaDOM.tam.value=f.tam||""; saidaDOM.medida.value=f.medida||"";
+  saidaDOM.ligacao.value=f.ligacao||0; saidaDOM.enchimento.value=f.enchimento||0; saidaDOM.cola.value=f.cola||0; saidaDOM.antiquebra.value=f.antiquebra||0; saidaDOM.manp.value=f.manchaoP||0; saidaDOM.mang.value=f.manchaoG||0; saidaDOM.tinta.value=f.tinta||0; saidaDOM.outros.value=f.outrosInsumos||"";
+  saidaDOM.vbruto.value=f.valorBruto||"R$ 0,00"; saidaDOM.forma.value=f.forma||"";
+  populateCondicoesForForma();
+  if(f.condicaoId){ saidaDOM.cond.value=f.condicaoId; } else { saidaDOM.cond.value=""; }
+  classToggle(saidaDOM.grupoMaq,false,"hidden");
+  saidaDOM.bandeira.value=f.bandeira||""; saidaDOM.produtoMaq.value=f.produtoMaquininha||""; saidaDOM.parcelas.value=f.parcelas||0; saidaDOM.taxaPct.value=f.taxaPct||"0,00%";
+  saidaDOM.desconto.value=f.desconto||"R$ 0,00"; saidaDOM.acrescimo.value=f.acrescimo||"R$ 0,00"; saidaDOM.vliq.value=BRL.format(0);
+  saidaDOM.status.value=f.status||"Pendente de serviço"; saidaDOM.obs.value=f.obs||"";
+  Object.keys(saidaDOM.err).forEach(k=>{ const el=saidaDOM.err[k]; if(el) el.textContent=""; });
+  const setFromIds=()=>{ if(f.srv_grupoId){ saidaDOM.srvGrupo.value=f.srv_grupoId; fillSubOptions(f.srv_grupoId); } if(f.srv_subId){ saidaDOM.srvSub.value=f.srv_subId; } };
+  refreshSrvCascata();
+  if(f.srv_grupoId || f.srv_subId){ setFromIds(); }
+  else if(f.servico){
+    const parts = String(f.servico).split(" – ");
+    const gLabel = (parts[0]||"").trim(); const sLabel = (parts[1]||"").trim();
+    const g = safeArr(state.srvGrupos).find(x=>x.label.toLowerCase()===gLabel.toLowerCase());
+    if(g){ saidaDOM.srvGrupo.value=g.id; fillSubOptions(g.id); const s = activeSubsByGrupo(g.id).find(y=>y.label.toLowerCase()===sLabel.toLowerCase()); if(s){ saidaDOM.srvSub.value=s.id; } }
+  }
+  state.tempInsumos = f.insumos?.slice() || [];
+  state.editingInsumoIndex = -1;
+  $("#btn-add-insumo").textContent = "Adicionar Insumo";
+  renderTempInsumosTable();
+  previewLiquido();
+}
+function getSaidaForm(){
+  const gId = saidaDOM.srvGrupo.value||""; const sId = saidaDOM.srvSub.value||"";
+  const g = getGrupoById(gId); const s = getSubById(sId);
+  const gLabel = g?.label || ""; const sLabel = s?.label || "";
+  const vendSel = saidaDOM.vend;
+  const vendedorId = vendSel.value;
+  const vendedorNome = vendedorId ? vendSel.options[vendSel.selectedIndex].text : "";
+  return {
+    dataColeta:parseISOorBR(saidaDOM.coleta.value)||TODAY_ISO,
+    dataServico:parseISOorBR(saidaDOM.servico.value)||TODAY_ISO,
+    dataEntrega:parseISOorBR(saidaDOM.entrega.value)||TODAY_ISO,
+    vendedorId, vendedorNome,
+    respAplicacao: saidaDOM.apl.value,
+    respControle: saidaDOM.ctrl.value,
+    obsCab:saidaDOM.obsCab.value,
+    os:saidaDOM.os.value, cliente:saidaDOM.cliente.value,
+    srv_grupoId:gId, srv_grupoLabel:gLabel, srv_subId:sId, srv_subLabel:sLabel,
+    servico: (gLabel && sLabel) ? `${gLabel} – ${sLabel}` : (gLabel || ""),
+    marca:saidaDOM.marca.value, dot:saidaDOM.dot.value, banda:saidaDOM.banda.value, largura:saidaDOM.largura.value, tam:saidaDOM.tam.value, medida:saidaDOM.medida.value,
+    ligacao:Number(saidaDOM.ligacao.value||0), enchimento:Number(saidaDOM.enchimento.value||0), cola:Number(saidaDOM.cola.value||0), antiquebra:Number(saidaDOM.antiquebra.value||0),
+    manchaoP:Number(saidaDOM.manp.value||0), manchaoG:Number(saidaDOM.mang.value||0), tinta:Number(saidaDOM.tinta.value||0), outrosInsumos:saidaDOM.outros.value,
+    valorBruto:saidaDOM.vbruto.value, forma:saidaDOM.forma.value,
+    condicaoId:(saidaDOM.cond.value||""), condicaoDesc:(getCondById(saidaDOM.cond.value||"")?.descricao||""),
+    bandeira:saidaDOM.bandeira.value, produtoMaquininha:saidaDOM.produtoMaq.value,
+    parcelas:Number(saidaDOM.parcelas.value||0), taxaPct:saidaDOM.taxaPct.value, desconto:saidaDOM.desconto.value, acrescimo:saidaDOM.acrescimo.value,
+    status:saidaDOM.status.value, obs:saidaDOM.obs.value, id:state.editingId||"",
+    insumos: state.tempInsumos.slice()
+  };
+}
+/* ===== Vendedores ===== */
+function populateVendedoresSelect(){
+  const sel = saidaDOM.vend;
+  sel.innerHTML = '<option value="">Selecione</option>';
+  safeArr(state.vendedores).filter(v=>v.status==="Ativo").sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).forEach(v=>{
+    const opt = document.createElement("option");
+    opt.value = v.id;
+    opt.textContent = v.nome;
+    sel.appendChild(opt);
+  });
+}
+/* ===== Entrada ===== */
+const entradaDOM = {
+  uploadBtn: $("#btn-upload-xml"),
+  manualBtn: $("#btn-entrada-manual"),
+  fileXml: $("#file-xml"),
+  analise: $("#entrada-analise"),
+  analiseNfnumero: $("#analise-nfnumero"),
+  analiseFornecedor: $("#analise-fornecedor"),
+  analiseDatanf: $("#analise-datanf"),
+  analiseTotal: $("#analise-total"),
+  analiseItensBody: $("#analise-itens-body"),
+  salvarAnalise: $("#btn-salvar-analise"),
+  cancelAnalise: $("#btn-cancel-analise"),
+  manual: $("#entrada-manual"),
+  manualNfnumero: $("#manual-nfnumero"),
+  manualFornecedor: $("#manual-fornecedor"),
+  manualDatanf: $("#manual-datanf"),
+  manualDesc: $("#manual-desc"),
+  manualQtd: $("#manual-qtd"),
+  manualValorunit: $("#manual-valorunit"),
+  manualUnidade: $("#manual-unidade"),
+  addItemManual: $("#btn-add-item-manual"),
+  manualItensBody: $("#manual-itens-body"),
+  salvarManual: $("#btn-salvar-manual"),
+  cancelManual: $("#btn-cancel-manual")
+};
+entradaDOM.manualValorunit.addEventListener("input", () => { entradaDOM.manualValorunit.value = maskBRLInput(entradaDOM.manualValorunit.value); });
+entradaDOM.uploadBtn.addEventListener("click", () => entradaDOM.fileXml.click());
+entradaDOM.fileXml.addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    try {
+      const parsed = parseNFeXML(ev.target.result);
+      state.parsedNFe = parsed;
+      renderAnalise(parsed);
+      classToggle(entradaDOM.analise, true);
+      classToggle(entradaDOM.manual, false);
+    } catch (err) {
+      addToast(`Erro ao parsear XML: ${err.message}`, "error");
+      classToggle(entradaDOM.analise, false);
+      classToggle(entradaDOM.manual, true);
+    }
+  };
+  reader.readAsText(file);
+  e.target.value = "";
+});
+entradaDOM.manualBtn.addEventListener("click", () => {
+  state.tempManualItens = [];
+  state.editingEntradaId = "";
+  state.parsedNFe = null;
+  entradaDOM.manualNfnumero.value = "";
+  entradaDOM.manualFornecedor.value = "";
+  entradaDOM.manualDatanf.value = TODAY_ISO;
+  renderManualItensTable();
+  classToggle(entradaDOM.manual, true);
+  classToggle(entradaDOM.analise, false);
+});
+entradaDOM.salvarAnalise.addEventListener("click", () => {
+  if (!state.parsedNFe) return;
+  const entry = {
+    id: uid(),
+    nfNumero: state.parsedNFe.nfNumero,
+    fornecedor: state.parsedNFe.fornecedor,
+    dataNf: state.parsedNFe.dataNf,
+    itens: state.parsedNFe.itens.map(it => ({desc: it.desc, qtd: it.qtd, valorUnit: it.valorUnit, unidade: it.unidade}))
+  };
+  state.entradaItens.push(entry);
+  persistAll();
+  addToast("NF salva.");
+  classToggle(entradaDOM.analise, false);
+  state.parsedNFe = null;
+  renderEntradaTabela();
+});
+entradaDOM.cancelAnalise.addEventListener("click", () => {
+  classToggle(entradaDOM.analise, false);
+  state.parsedNFe = null;
+});
+entradaDOM.addItemManual.addEventListener("click", () => {
+  const desc = entradaDOM.manualDesc.value.trim();
+  const qtd = Number(entradaDOM.manualQtd.value || 0);
+  const valorUnit = parseBRL(entradaDOM.manualValorunit.value);
+  const unidade = entradaDOM.manualUnidade.value;
+  if (!desc) return addToast("Informe descrição.", "error");
+  if (qtd <= 0) return addToast("Qtd > 0.", "error");
+  state.tempManualItens.push({desc, qtd, valorUnit, unidade});
+  entradaDOM.manualDesc.value = "";
+  entradaDOM.manualQtd.value = 0;
+  entradaDOM.manualValorunit.value = "R$ 0,00";
+  renderManualItensTable();
+});
+entradaDOM.salvarManual.addEventListener("click", () => {
+  const nfNumero = entradaDOM.manualNfnumero.value.trim();
+  const fornecedor = entradaDOM.manualFornecedor.value.trim();
+  const dataNf = parseISOorBR(entradaDOM.manualDatanf.value) || TODAY_ISO;
+  if (state.tempManualItens.length === 0) return addToast("Adicione itens.", "error");
+  const entry = {
+    id: state.editingEntradaId || uid(),
+    nfNumero,
+    fornecedor,
+    dataNf,
+    itens: state.tempManualItens.slice()
+  };
+  if (state.editingEntradaId) {
+    state.entradaItens = state.entradaItens.map(e => e.id === state.editingEntradaId ? entry : e);
+    state.editingEntradaId = "";
+    addToast("NF editada.");
+  } else {
+    state.entradaItens.push(entry);
+    addToast("NF salva.");
+  }
+  persistAll();
+  classToggle(entradaDOM.manual, false);
+  state.tempManualItens = [];
+  renderEntradaTabela();
+});
+entradaDOM.cancelManual.addEventListener("click", () => {
+  classToggle(entradaDOM.manual, false);
+  state.tempManualItens = [];
+  state.editingEntradaId = "";
+});
+function parseNFeXML(xmlText) {
+  const parser = new DOMParser();
+  const xml = parser.parseFromString(xmlText, "text/xml");
+  if (xml.getElementsByTagName("parsererror").length > 0) throw new Error("XML inválido.");
+  const ide = xml.querySelector("ide");
+  if (!ide) throw new Error("Não encontrado <ide>.");
+  const nfNumero = ide.querySelector("nNF")?.textContent.trim() || "";
+  const dhEmi = ide.querySelector("dhEmi")?.textContent.trim() || "";
+  const dataNf = dhEmi ? dhEmi.slice(0, 10) : "";
+  const emit = xml.querySelector("emit");
+  const fornecedor = emit?.querySelector("xNome")?.textContent.trim() || "";
+  const itens = [];
+  $$("det", xml).forEach(det => {
+    const prod = det.querySelector("prod");
+    if (!prod) return;
+    const desc = prod.querySelector("xProd")?.textContent.trim() || "";
+    const qtd = Number(prod.querySelector("qCom")?.textContent || 0);
+    const valorUnit = Number(prod.querySelector("vUnCom")?.textContent || 0);
+    const unidade = prod.querySelector("uCom")?.textContent.trim() || "UN";
+    if (desc && qtd > 0) itens.push({desc, qtd, valorUnit, unidade});
+  });
+  if (itens.length === 0) throw new Error("Nenhum item encontrado.");
+  return {nfNumero, fornecedor, dataNf, itens};
+}
+function renderAnalise(parsed) {
+  entradaDOM.analiseNfnumero.value = parsed.nfNumero;
+  entradaDOM.analiseFornecedor.value = parsed.fornecedor;
+  entradaDOM.analiseDatanf.value = parsed.dataNf;
+  entradaDOM.analiseTotal.value = BRL.format(parsed.itens.reduce((s, it) => s + it.qtd * it.valorUnit, 0));
+  const body = entradaDOM.analiseItensBody;
+  body.innerHTML = "";
+  parsed.itens.forEach(it => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${escapeHtml(it.desc)}</td><td>${it.qtd}</td><td>${BRL.format(it.valorUnit)}</td><td>${escapeHtml(it.unidade)}</td><td>${BRL.format(it.qtd * it.valorUnit)}</td>`;
+    body.appendChild(tr);
+  });
+}
+function renderManualItensTable() {
+  const body = entradaDOM.manualItensBody;
+  body.innerHTML = "";
+  state.tempManualItens.forEach((it, idx) => {
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${escapeHtml(it.desc)}</td><td>${it.qtd}</td><td>${BRL.format(it.valorUnit)}</td><td>${escapeHtml(it.unidade)}</td><td>${BRL.format(it.qtd * it.valorUnit)}</td><td><button class="btn btn-rose" data-idx="${idx}" style="min-height:28px">Remover</button></td>`;
+    tr.querySelector("button").addEventListener("click", () => {
+      state.tempManualItens.splice(idx, 1);
+      renderManualItensTable();
+    });
+    body.appendChild(tr);
+  });
+}
+/* ===== Parâmetros ===== */
+const prm = {
+  comp:$("#mcomp"), dias:$("#dias"),
+  recapMes:$("#recapMes"),
+  bronzeMes:$("#bronzeMes"), prataMes:$("#prataMes"), ouroMes:$("#ouroMes"),
+  metaConsertoMes:$("#metaConsertoMes"), metaBorrachariaMes:$("#metaBorrachariaMes"), metaVendaPneusMes:$("#metaVendaPneusMes"),
+  cnome:$("#cnome"), ccpf:$("#ccpf"), ccid:$("#ccid"), cresp: $("#cresp"), ccont:$("#ccont"), cati:$("#cati"), buscaClientes:$("#busca-clientes"),
+  vnome:$("#vnome"), vati:$("#vati"), buscaVendedores:$("#busca-vendedores"),
+  buscaServicos:$("#busca-servicos"), srvGrupoNovo:$("#srv-grupo-novo"), srvSubNovo:$("#srv-sub-novo"),
+  fpForma:$("#fp-forma"), fpDesc:$("#fp-desc"), fpPct:$("#fp-pct"), fpFixa:$("#fp-fixa"), fpFixaWrap:$("#fp-fixa-wrap"),
+  iFornecedor:$("#iFornecedor"), iBanda:$("#iBanda"), iLargura:$("#iLargura"), iTamanho:$("#iTamanho"), iSulco:$("#iSulco"), iMedida:$("#iMedida"),
+  iTipoBanda:$("#iTipoBanda"), iTipoPneu:$("#iTipoPneu"), iVendaSemDesc:$("#iVendaSemDesc"), iVendaAvista:$("#iVendaAvista"), iCustoInsumo:$("#iCustoInsumo"), iAtivo:$("#iAtivo"),
+  buscaInsumosImportado: $("#busca-insumos-importado")
+};
+prm.comp.value=THIS_MONTH;
+["bronzeMes","prataMes","ouroMes","metaConsertoMes","metaBorrachariaMes","metaVendaPneusMes","iVendaSemDesc","iVendaAvista","iCustoInsumo"].forEach(id=>{
+  const el = prm[id];
+  if(el) el.addEventListener("input",()=>{ el.value=maskBRLInput(el.value); });
+});
+prm.fpPct.addEventListener("input",()=>{ prm.fpPct.value = maskPctInput(prm.fpPct.value); });
+prm.fpFixa.addEventListener("input",()=>{ prm.fpFixa.value = maskBRLInput(prm.fpFixa.value); });
+function toggleFixa(){ const isBoleto = (prm.fpForma.value||"") === "Boleto"; classToggle(prm.fpFixaWrap, isBoleto===true); }
+prm.fpForma.addEventListener("change",()=>{ toggleFixa(); });
+/* Metas */
+$("#btn-meta-salvar").addEventListener("click",()=>{
+  const comp=prm.comp.value||THIS_MONTH;
+  const metasSrv = {
+    consertos: parseBRL(prm.metaConsertoMes.value||"R$ 0,00"),
+    borracharia: parseBRL(prm.metaBorrachariaMes.value||"R$ 0,00"),
+    vendaPneus: parseBRL(prm.metaVendaPneusMes.value||"R$ 0,00")
+  };
+  state.metas[comp]={
+    dias: Number(prm.dias.value||0),
+    recapMes:Number(prm.recapMes.value||0),
+    faturamentoMes:{ bronze:parseBRL(prm.bronzeMes.value), prata:parseBRL(prm.prataMes.value), ouro:parseBRL(prm.ouroMes.value) },
+    faturamentoServicos: metasSrv
+  };
+  persistAll(); addToast("Metas salvas."); renderAll();
+});
+/* Clientes CRUD */
+$("#btn-cliente-add").addEventListener("click",()=>{
+  if(!prm.cnome.value){ addToast("Informe o nome do cliente.","error"); return; }
+  const c={ id:uid(), nome:prm.cnome.value, cpfCnpj:prm.ccpf.value, cidadeUf:prm.ccid.value, responsavel: prm.cresp.value, contato:prm.ccont.value, ativo:prm.cati.value||"S" };
+  state.clientes=[c,...state.clientes]; persistAll();
+  prm.cnome.value=prm.ccpf.value=prm.ccid.value=prm.cresp.value=prm.ccont.value=""; prm.cati.value="S";
+  hydrateClientesDatalist(); renderClientes(); addToast("Cliente adicionado.");
+});
+function hydrateClientesDatalist(){ const dl=$("#clientes-list"); if(!dl) return; dl.innerHTML=""; safeArr(state.clientes).forEach(c=>{ const o=document.createElement("option"); o.value=c.nome; dl.appendChild(o); }); }
+prm.buscaClientes.addEventListener("input",renderClientes);
+function confirmAction(title, summary, onConfirm){
+  $("#modal-title").textContent=title; $("#modal-content").innerHTML=`<div class="muted">${summary}</div>`; $("#modal-actions").style.display="flex"; $("#modal").classList.remove("hidden");
+  const off=()=>{ $("#modal").classList.add("hidden"); $("#modal-actions").style.display="none"; };
+  $("#modal-cancel").onclick=off; $("#modal-close").onclick=off; $("#modal-confirm").onclick=()=>{ off(); onConfirm&&onConfirm(); };
+}
+function renderClientes(){
+  const wrap=$("#clientes-wrap"), empty=$("#clientes-empty");
+  const q=(prm.buscaClientes.value||"").toLowerCase();
+  const rows=safeArr(state.clientes).filter(c=>[c.nome,c.cpfCnpj,c.cidadeUf,c.contato].some(v=>(v||"").toLowerCase().includes(q)));
+  classToggle(wrap, rows.length>0); classToggle(empty, rows.length===0);
+  const tbody=$("#clientes-body"); tbody.innerHTML="";
+  rows.forEach(c=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${escapeHtml(c.nome)}</td><td>${escapeHtml(c.cpfCnpj||"—")}</td><td>${escapeHtml(c.cidadeUf||"—")}</td><td>${escapeHtml(c.responsavel || "—")}</td><td>${escapeHtml(c.contato||"—")}</td><td>${escapeHtml(c.ativo)}</td>
+      <td><button class="btn btn-sky" style="min-height:28px">Editar</button><button class="btn btn-rose" style="min-height:28px">Excluir</button></td>`;
+    const [btnEdit,btnDel] = tr.querySelectorAll("button");
+    btnEdit.addEventListener("click",()=>{ confirmAction("Tem certeza?", `Editar o cliente <strong>${escapeHtml(c.nome)}</strong>?`, ()=>{ prm.cnome.value=c.nome; prm.ccpf.value=c.cpfCnpj||""; prm.ccid.value=c.cidadeUf||""; prm.cresp.value = c.responsavel || ""; prm.ccont.value=c.contato||""; prm.cati.value=c.ativo||"S"; state.clientes=state.clientes.filter(x=>x!==c); persistAll(); hydrateClientesDatalist(); renderClientes(); }); });
+    btnDel.addEventListener("click",()=>{ confirmAction("Tem certeza?", `Excluir o cliente <strong>${escapeHtml(c.nome)}</strong>?`, ()=>{ state.clientes=state.clientes.filter(x=>x!==c); persistAll(); renderClientes(); }); });
+    tbody.appendChild(tr);
+  });
+}
+/* ===== Vendedores CRUD ===== */
+$("#btn-vendedor-add").addEventListener("click",()=>{
+  if(!prm.vnome.value){ addToast("Informe o nome do vendedor.","error"); return; }
+  const v={ id:uid(), nome:prm.vnome.value.trim(), status:prm.vati.value||"Ativo" };
+  state.vendedores=[v,...state.vendedores]; persistAll();
+  prm.vnome.value=""; prm.vati.value="Ativo";
+  renderVendedores(); populateVendedoresSelect(); addToast("Vendedor adicionado.");
+});
+prm.buscaVendedores.addEventListener("input",renderVendedores);
+function renderVendedores(){
+  const wrap=$("#vendedores-wrap"), empty=$("#vendedores-empty");
+  const q=(prm.buscaVendedores.value||"").toLowerCase();
+  const rows=safeArr(state.vendedores).filter(v=>normText(v.nome).includes(q));
+  classToggle(wrap, rows.length>0); classToggle(empty, rows.length===0);
+  const tbody=$("#vendedores-body"); tbody.innerHTML="";
+  rows.forEach(v=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${escapeHtml(v.nome)}</td><td>${escapeHtml(v.status)}</td>
+      <td><button class="btn btn-sky" style="min-height:28px">Editar</button><button class="btn btn-rose" style="min-height:28px">Excluir</button></td>`;
+    const [btnEdit,btnDel] = tr.querySelectorAll("button");
+    btnEdit.addEventListener("click",()=>{ confirmAction("Tem certeza?", `Editar o vendedor <strong>${escapeHtml(v.nome)}</strong>?`, ()=>{ prm.vnome.value=v.nome; prm.vati.value=v.status; state.vendedores=state.vendedores.filter(x=>x!==v); persistAll(); renderVendedores(); populateVendedoresSelect(); }); });
+    btnDel.addEventListener("click",()=>{ confirmAction("Tem certeza?", `Excluir o vendedor <strong>${escapeHtml(v.nome)}</strong>?`, ()=>{ state.vendedores=state.vendedores.filter(x=>x!==v); persistAll(); renderVendedores(); populateVendedoresSelect(); }); });
+    tbody.appendChild(tr);
+  });
+}
+/* ===== Insumos de Recapagem (CRUD) ===== */
+const insumosTextFields = ["fornecedor", "banda", "largura", "tamanho", "sulco", "medida", "tipobanda", "tipopneu"];
+const insumosNumFields = ["vendasemdesc", "vendaavista", "custoinsumo"];
+const propName = (f) => ({
+  tipobanda: "tipoBanda",
+  tipopneu: "tipoPneu",
+  vendasemdesc: "vendaSemDesc",
+  vendaavista: "vendaAvista",
+  custoinsumo: "custoInsumo"
+}[f] || f);
+function getInsumosFilters(type){
+  const filters = {};
+  insumosTextFields.forEach(f=>{ const el=$(`#filter-${f}-${type}`); if(el) filters[f] = normText(el.value||""); });
+  insumosNumFields.forEach(f=>{
+    const minEl=$(`#filter-${f}-min-${type}`); const maxEl=$(`#filter-${f}-max-${type}`);
+    if(minEl && minEl.value !== "") filters[`${f}Min`] = Number(minEl.value);
+    if(maxEl && maxEl.value !== "") filters[`${f}Max`] = Number(maxEl.value);
+  });
+  return filters;
+}
+function applyInsumosFilters(type){
+  state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Filters`] = getInsumosFilters(type);
+  renderInsumos(type);
+}
+function clearInsumosFilters(type){
+  insumosTextFields.forEach(f=>{ const el=$(`#filter-${f}-${type}`); if(el) el.value=""; });
+  insumosNumFields.forEach(f=>{
+    const minEl=$(`#filter-${f}-min-${type}`); const maxEl=$(`#filter-${f}-max-${type}`);
+    if(minEl) minEl.value=""; if(maxEl) maxEl.value="";
+  });
+  state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Filters`] = {};
+  renderInsumos(type);
+}
+function updateInsumosCollapseUI(type){
+  const toggleBtn=$(`#insumos-${type}-toggle`);
+  const wrap=$(`#insumos-${type}-wrap`);
+  const empty=$(`#insumos-${type}-empty`);
+  const n=safeArr(state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}`]).length;
+  if($(`#insumos-${type}-count`)) $(`#insumos-${type}-count`).textContent=String(n);
+  if(toggleBtn){
+    toggleBtn.setAttribute("aria-expanded", String(!state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Collapsed`]));
+    toggleBtn.textContent = state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Collapsed`] ? "▼" : "▲";
+  }
+  if(state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Collapsed`]){ classToggle(wrap,false); classToggle(empty,false); }
+  else{ classToggle(wrap, n>0); classToggle(empty, n===0); }
+}
+function renderInsumos(type){
+  let insumos = state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}`];
+  const filters = state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Filters`] || {};
+  let q = "";
+  if(type === "importado" && prm.buscaInsumosImportado){
+    q = normText(prm.buscaInsumosImportado.value||"");
+  }
+  if(type === "importado"){
+    insumos = insumos.slice().sort((a,b) => (a.importOrder || Infinity) - (b.importOrder || Infinity));
+  } else {
+    insumos = insumos.slice().sort((a,b) => b.id.localeCompare(a.id));
+  }
+  const wrap=$(`#insumos-${type}-wrap`), empty=$(`#insumos-${type}-empty`);
+  const rows=safeArr(insumos).filter(r=>{
+    if(q && !insumosTextFields.some(f => normText(r[propName(f)]||"").includes(q))) return false;
+    return insumosTextFields.every(f=> filters[f] ? normText(r[propName(f)]||"").includes(filters[f]) : true) &&
+      insumosNumFields.every(f=> {
+        const val = Number(r[propName(f)]||0);
+        const min = filters[`${f}Min`];
+        const max = filters[`${f}Max`];
+        return (min === undefined || val >= min) && (max === undefined || val <= max);
+      });
+  });
+  classToggle(wrap, rows.length>0); classToggle(empty, rows.length===0);
+  const tbody=$(`#insumos-${type}-body`); tbody.innerHTML="";
+  rows.forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `
+      <td><input type="checkbox" data-id="${r.id}" class="insumo-checkbox-${type}"></td>
+      <td>${escapeHtml(r.fornecedor||"—")}</td>
+      <td>${escapeHtml(r.banda)}</td>
+      <td>${escapeHtml(r.largura)}</td>
+      <td>${escapeHtml(r.tamanho)}</td>
+      <td>${escapeHtml(r.sulco)}</td>
+      <td>${escapeHtml(r.medida)}</td>
+      <td>${escapeHtml(r.tipoBanda)}</td>
+      <td>${escapeHtml(r.tipoPneu)}</td>
+      <td>${BRL.format(Number(r.vendaSemDesc||0))}</td>
+      <td>${BRL.format(Number(r.vendaAvista||0))}</td>
+      <td>${BRL.format(Number(r.custoInsumo||0))}</td>
+      <td>
+        <select class="input" style="min-height:32px;padding:.25rem .5rem;width:auto">
+          <option ${r.ativo==="S"?"selected":""}>S</option><option ${r.ativo==="N"?"selected":""}>N</option>
+        </select>
+      </td>
+      <td>
+        <button class="btn btn-sky" style="min-height:28px">Editar</button>
+        <button class="btn btn-rose" style="min-height:28px">Excluir</button>
+      </td>
+    `;
+    const [chk, selAtivo, btnEdit, btnDel] = [tr.querySelector("input[type=checkbox]"), tr.querySelector("select"), ...tr.querySelectorAll("button")];
+    chk.checked = state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Selected`].has(r.id);
+    chk.addEventListener("change",()=>{ if(chk.checked) state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Selected`].add(r.id); else state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}Selected`].delete(r.id); });
+    selAtivo.addEventListener("change",()=>{ r.ativo=selAtivo.value==="S"?"S":"N"; persistAll(); addToast("Alterado."); renderInsumos(type); });
+    btnEdit.addEventListener("click",()=>{
+      confirmAction("Editar insumo", `Editar <strong>${escapeHtml(r.banda)}</strong> (${escapeHtml(r.medida)})?`, ()=>{
+        prm.iFornecedor.value=r.fornecedor||"";
+        prm.iBanda.value=r.banda; prm.iLargura.value=r.largura; prm.iTamanho.value=r.tamanho; prm.iSulco.value=r.sulco; prm.iMedida.value=r.medida;
+        prm.iTipoBanda.value=r.tipoBanda; prm.iTipoPneu.value=r.tipoPneu;
+        prm.iVendaSemDesc.value=BRL.format(Number(r.vendaSemDesc||0));
+        prm.iVendaAvista.value=BRL.format(Number(r.vendaAvista||0));
+        prm.iCustoInsumo.value=BRL.format(Number(r.custoInsumo||0));
+        prm.iAtivo.value=r.ativo||"S";
+        state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}`]=state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}`].filter(x=>x.id!==r.id);
+        persistAll(); renderInsumos(type); openTab("parametros");
+      });
+    });
+    btnDel.addEventListener("click",()=>{
+      confirmAction("Excluir insumo", `Excluir <strong>${escapeHtml(r.banda)}</strong> (${escapeHtml(r.medida)})?`, ()=>{
+        state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}`] = state[`insumos${type.charAt(0).toUpperCase() + type.slice(1)}`].filter(x=>x.id!==r.id);
+        persistAll(); renderInsumos(type);
+      });
+    });
+    tbody.appendChild(tr);
+  });
+  updateInsumosCollapseUI(type);
+}
+prm.buscaInsumosImportado.addEventListener("input", nfDebounce(()=>renderInsumos("importado"), 120));
+$("#btn-insumo-add").addEventListener("click",()=>{
+  const textRequired = ["iBanda","iLargura","iTamanho","iSulco","iMedida","iTipoBanda","iTipoPneu"];
+  for(const id of textRequired){ const el=prm[id]; if(!el) continue; const val=el.value.trim(); if(!val){ addToast("Preencha todos os campos obrigatórios (*)","error"); el.classList.add("err"); el.focus(); return; } el.classList.remove("err"); }
+  const numericRequired = ["iVendaSemDesc","iVendaAvista","iCustoInsumo"];
+  for(const id of numericRequired){ const el=prm[id]; if(!el) continue; const val=parseBRL(el.value||"R$ 0,00"); if(val<=0){ addToast("Preencha todos os campos obrigatórios (*)","error"); el.classList.add("err"); el.focus(); return; } el.classList.remove("err"); }
+  const rec = {
+    id: uid(),
+    fornecedor: prm.iFornecedor.value.trim()||"",
+    banda: prm.iBanda.value.trim(),
+    largura: prm.iLargura.value.trim(),
+    tamanho: prm.iTamanho.value.trim().toUpperCase(),
+    sulco: prm.iSulco.value.trim(),
+    medida: prm.iMedida.value.trim(),
+    tipoBanda: prm.iTipoBanda.value.trim(),
+    tipoPneu: prm.iTipoPneu.value.trim(),
+    vendaSemDesc: parseBRL(prm.iVendaSemDesc.value),
+    vendaAvista: parseBRL(prm.iVendaAvista.value),
+    custoInsumo: parseBRL(prm.iCustoInsumo.value),
+    ativo: prm.iAtivo.value||"S",
+    isImported: false
+  };
+  state.insumosManual = [rec, ...state.insumosManual];
+  persistAll(); addToast("Insumo adicionado.");
+  prm.iFornecedor.value="";
+  prm.iBanda.value=prm.iLargura.value=prm.iTamanho.value=prm.iSulco.value=prm.iMedida.value=prm.iTipoBanda.value=prm.iTipoPneu.value="";
+  prm.iVendaSemDesc.value="R$ 0,00"; prm.iVendaAvista.value="R$ 0,00"; prm.iCustoInsumo.value="R$ 0,00"; prm.iAtivo.value="S";
+  renderInsumos("manual");
+});
+$("#insumos-importado-toggle").addEventListener("click", ()=>{ state.insumosImportadoCollapsed = !state.insumosImportadoCollapsed; persistAll(); updateInsumosCollapseUI("importado"); });
+$("#insumos-manual-toggle").addEventListener("click", ()=>{ state.insumosManualCollapsed = !state.insumosManualCollapsed; persistAll(); updateInsumosCollapseUI("manual"); });
+$("#btn-apply-filters-importado").addEventListener("click", () => applyInsumosFilters("importado"));
+$("#btn-clear-filters-importado").addEventListener("click", () => clearInsumosFilters("importado"));
+$("#btn-apply-filters-manual").addEventListener("click", () => applyInsumosFilters("manual"));
+$("#btn-clear-filters-manual").addEventListener("click", () => clearInsumosFilters("manual"));
+$("#btn-select-all-importado").addEventListener("click", () => {
+  state.insumosImportadoSelected = new Set(state.insumosImportado.map(r => r.id));
+  $$('.insumo-checkbox-importado').forEach(chk => chk.checked = true);
+});
+$("#btn-deselect-all-importado").addEventListener("click", () => {
+  state.insumosImportadoSelected.clear();
+  $$('.insumo-checkbox-importado').forEach(chk => chk.checked = false);
+});
+$("#btn-delete-selected-importado").addEventListener("click", () => {
+  if(state.insumosImportadoSelected.size === 0) return addToast("Nenhum selecionado.","error");
+  confirmAction("Excluir selecionados", `Excluir ${state.insumosImportadoSelected.size} insumos?`, () => {
+    state.insumosImportado = state.insumosImportado.filter(r => !state.insumosImportadoSelected.has(r.id));
+    state.insumosImportadoSelected.clear();
+    persistAll(); renderInsumos("importado");
+  });
+});
+$("#btn-edit-selected-importado").addEventListener("click", () => {
+  if(state.insumosImportadoSelected.size === 0) return addToast("Nenhum selecionado.","error");
+  openBatchEdit("importado");
+});
+$("#btn-select-all-manual").addEventListener("click", () => {
+  state.insumosManualSelected = new Set(state.insumosManual.map(r => r.id));
+  $$('.insumo-checkbox-manual').forEach(chk => chk.checked = true);
+});
+$("#btn-deselect-all-manual").addEventListener("click", () => {
+  state.insumosManualSelected.clear();
+  $$('.insumo-checkbox-manual').forEach(chk => chk.checked = false);
+});
+$("#btn-delete-selected-manual").addEventListener("click", () => {
+  if(state.insumosManualSelected.size === 0) return addToast("Nenhum selecionado.","error");
+  confirmAction("Excluir selecionados", `Excluir ${state.insumosManualSelected.size} insumos?`, () => {
+    state.insumosManual = state.insumosManual.filter(r => !state.insumosManualSelected.has(r.id));
+    state.insumosManualSelected.clear();
+    persistAll(); renderInsumos("manual");
+  });
+});
+$("#btn-edit-selected-manual").addEventListener("click", () => {
+  if(state.insumosManualSelected.size === 0) return addToast("Nenhum selecionado.","error");
+  openBatchEdit("manual");
+});
+$("#btn-importar-insumos").addEventListener("click", () => { $("#file-import-insumos").click(); });
+$("#file-import-insumos").addEventListener("change", (e) => {
+  const file = e.target.files[0];
+  if (!file) return;
+  const reader = new FileReader();
+  reader.onload = (ev) => {
+    const data = ev.target.result;
+    const wb = XLSX.read(data, { type: "binary" });
+    const ws = wb.Sheets["Planilha1"];
+    const rows = XLSX.utils.sheet_to_json(ws, { header: 1, range: 1 });
+    const imported = [];
+    const parseImport = (val) => {
+      if (typeof val === 'number') return Math.round(val * 100) / 100;
+      const clean = String(val).replace(/[^0-9.-]/g, '').replace(/,/g, '');
+      const n = Number(clean);
+      return Number.isFinite(n) ? Math.round(n * 100) / 100 : 0;
+    };
+    rows.forEach((row, index) => {
+      if (row.length < 9) return;
+      const [banda, largura, tamanho, sulco, medida, tipoBanda, tipoPneu, vendaSemDesc, vendaAvista, custoInsumo] = row;
+      if (!banda || !largura || !tamanho || !sulco || !medida || !tipoBanda || !tipoPneu) return;
+      imported.push({
+        id: uid(),
+        fornecedor: "",
+        banda: String(banda).trim(),
+        largura: String(largura).trim(),
+        tamanho: String(tamanho).trim().toUpperCase(),
+        sulco: String(sulco).trim(),
+        medida: String(medida).trim(),
+        tipoBanda: String(tipoBanda).trim(),
+        tipoPneu: String(tipoPneu).trim(),
+        vendaSemDesc: parseImport(vendaSemDesc),
+        vendaAvista: parseImport(vendaAvista),
+        custoInsumo: parseImport(custoInsumo),
+        ativo: "S",
+        isImported: true,
+        importOrder: index
+      });
+    });
+    const getKey = (i) => normText(`${i.banda}${i.largura}${i.tamanho}${i.sulco}${i.medida}${i.tipoBanda}${i.tipoPneu}`);
+    const importedMap = new Map(imported.map((i) => [getKey(i), i]));
+    let novos = 0, atualizados = 0, inativados = 0;
+    const now = new Date().toISOString();
+    state.insumosImportado = state.insumosImportado.map((existing) => {
+      const key = getKey(existing);
+      const imp = importedMap.get(key);
+      if (imp) {
+        existing.vendaSemDesc = imp.vendaSemDesc;
+        existing.vendaAvista = imp.vendaAvista;
+        existing.custoInsumo = imp.custoInsumo;
+        existing.updatedAt = now;
+        existing.importOrder = imp.importOrder;
+        atualizados++;
+        importedMap.delete(key);
+        return existing;
+      } else {
+        if (existing.ativo === "S") {
+          existing.ativo = "N";
+          existing.updatedAt = now;
+          inativados++;
+        }
+        return existing;
+      }
+    });
+    importedMap.forEach((imp) => {
+      state.insumosImportado.push(imp);
+      novos++;
+    });
+    persistAll();
+    renderInsumos("importado");
+    addToast(`Importado! ${atualizados} atualizados, ${novos} novos, ${inativados} inativados.`);
+  };
+  reader.readAsBinaryString(file);
+  e.target.value = "";
+});
+/* ===== Serviços (Grupo/Sub) – CRUD ===== */
+$("#btn-srv-add").addEventListener("click",()=>{
+  const gLabel = (prm.srvGrupoNovo.value||"").trim();
+  const sLabel = (prm.srvSubNovo.value||"").trim();
+  if(!gLabel || !sLabel){ addToast("Informe Grupo e Sub-Serviço.","error"); return; }
+  const gSlug=slugify(gLabel); const sSlug=slugify(sLabel);
+  const gId=`srvGrp-${gSlug}`; const sId=`srvSub-${gSlug}-${sSlug}`;
+  if(!state.srvGrupos.some(g=>g.id===gId)){ state.srvGrupos.push({id:gId,label:gLabel,ativo:"S"}); }
+  if(state.srvSubs.some(s=>s.id===sId)){ addToast("Sub-Serviço já cadastrado neste grupo.","error"); return; }
+  state.srvSubs=[{id:sId,grupoId:gId,label:sLabel,ativo:"S"}, ...state.srvSubs];
+  persistAll();
+  prm.srvSubNovo.value=""; addToast("Serviço adicionado."); renderServicos(); refreshSrvCascata(); hydrateServicoOptions();
+});
+prm.buscaServicos.addEventListener("input",renderServicos);
+function openEditServ(r){
+  const g = r.g;
+  $("#modal-title").textContent="Editar serviço";
+  $("#modal-content").innerHTML = `
+    <div class="grid grid-fit">
+      <div>
+        <label class="mb-2" for="edit-srv-grupo" style="display:block;font-weight:600;color:var(--slate-700)">Grupo</label>
+        <input id="edit-srv-grupo" class="input" value="${escapeHtml(g.label)}">
+      </div>
+      <div>
+        <label class="mb-2" for="edit-srv-sub" style="display:block;font-weight:600;color:var(--slate-700)">Sub-Serviço</label>
+        <input id="edit-srv-sub" class="input" value="${escapeHtml(r.label)}">
+      </div>
+      <div>
+        <label class="mb-2" for="edit-srv-ativo" style="display:block;font-weight:600;color:var(--slate-700)">Ativo</label>
+        <select id="edit-srv-ativo" class="input">
+          <option ${r.ativo==="S"?"selected":""}>S</option>
+          <option ${r.ativo==="N"?"selected":""}>N</option>
+        </select>
+      </div>
+    </div>
+  `;
+  $("#modal-actions").style.display="flex";
+  $("#modal").classList.remove("hidden");
+  const off=()=>{ $("#modal").classList.add("hidden"); $("#modal-actions").style.display="none"; };
+  $("#modal-cancel").onclick=off; $("#modal-close").onclick=off;
+  $("#modal-confirm").onclick=()=>{
+    const newGLabel = $("#edit-srv-grupo").value.trim();
+    const newSLabel = $("#edit-srv-sub").value.trim();
+    const newAtivo = $("#edit-srv-ativo").value;
+    if(!newGLabel || !newSLabel){ addToast("Grupo e Sub-Serviço obrigatórios.","error"); return; }
+    // Update group if changed
+    if(newGLabel !== g.label){
+      state.srvGrupos = state.srvGrupos.map(x=> x.id===g.id ? {...x, label:newGLabel} : x);
+    }
+    // Update sub
+    state.srvSubs = state.srvSubs.map(x=> x.id===r.id ? {...x, label:newSLabel, ativo:newAtivo} : x);
+    persistAll();
+    renderServicos();
+    refreshSrvCascata();
+    hydrateServicoOptions();
+    off();
+    addToast("Serviço atualizado.");
+  };
+}
+function renderServicos(){
+  const wrap=$("#srv-wrap"), empty=$("#srv-empty");
+  const q=String(prm.buscaServicos.value||"").toLowerCase();
+  const rows = safeArr(state.srvSubs)
+    .map(s=>({ ...s, g:getGrupoById(s.grupoId) }))
+    .filter(r=> r.g && ([r.g.label,r.label].some(v=>String(v||"").toLowerCase().includes(q))))
+    .sort((a,b)=> (a.g.label.localeCompare(b.g.label,'pt-BR')) || (a.label.localeCompare(b.label,'pt-BR')));
+  classToggle(wrap, rows.length>0); classToggle(empty, rows.length===0);
+  const tbody=$("#srv-body"); tbody.innerHTML="";
+  rows.forEach(r=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(r.g.label)}</td>
+      <td>${escapeHtml(r.label)}</td>
+      <td>
+        <select data-k="ativo" class="input" style="min-height:32px;padding:.25rem .5rem;width:auto">
+          <option ${r.ativo==="S"?"selected":""}>S</option><option ${r.ativo==="N"?"selected":""}>N</option>
+        </select>
+      </td>
+      <td><button class="btn btn-sky" style="min-height:28px">Editar</button> <button class="btn btn-rose" style="min-height:28px">Excluir</button></td>
+    `;
+    tr.querySelector('select[data-k="ativo"]').addEventListener("change",(e)=>{
+      const val=e.target.value==="S"?"S":"N";
+      state.srvSubs = state.srvSubs.map(x=> x.id===r.id? {...x,ativo:val}:x);
+      persistAll(); refreshSrvCascata(); hydrateServicoOptions(); addToast("Alterado.");
+    });
+    tr.querySelector(".btn-sky").addEventListener("click",()=>openEditServ(r));
+    tr.querySelector(".btn-rose").addEventListener("click",()=>{ confirmAction("Tem certeza?", `Excluir o sub-serviço <strong>${escapeHtml(r.label)}</strong> do grupo <strong>${escapeHtml(r.g.label)}</strong>?`, ()=>{
+      state.srvSubs = state.srvSubs.filter(x=>x.id!==r.id);
+      persistAll(); renderServicos(); refreshSrvCascata(); hydrateServicoOptions(); addToast("Removido.");
+    }); });
+    tbody.appendChild(tr);
+  });
+}
+/* ===== CONDIÇÕES de pagamento ===== */
+function updatePayCondsCollapseUI(){
+  const toggleBtn=$("#fp-toggle");
+  const wrap=$("#fp-wrap");
+  const empty=$("#fp-empty");
+  const n=safeArr(state.payConds).length;
+  if($("#fp-count") ) $("#fp-count").textContent=String(n);
+  if(toggleBtn){
+    toggleBtn.setAttribute("aria-expanded", String(!state.payCondsCollapsed));
+    toggleBtn.textContent = state.payCondsCollapsed ? "▼" : "▲";
+  }
+  if(state.payCondsCollapsed){ classToggle(wrap,false); classToggle(empty,false); }
+  else{ classToggle(wrap, n>0); classToggle(empty, n===0); }
+}
+$("#btn-fp-add").addEventListener("click",()=>{
+  const forma = (prm.fpForma.value||"").trim();
+  const desc = (prm.fpDesc.value||"").trim();
+  const percN = parsePercNumber(prm.fpPct.value||"0");
+  const isBoleto = forma==="Boleto";
+  const fixaN = isBoleto ? parseBRL(prm.fpFixa.value||"R$ 0,00") : 0;
+  $("#fp-desc-err").textContent="";
+  if(!forma){ addToast("Selecione a Forma.","error"); return; }
+  if(!desc){ $("#fp-desc-err").textContent="Informe a descrição."; addToast("Descrição é obrigatória.","error"); return; }
+  if(!(Number.isFinite(percN) && percN>=0 && percN<=100)){ addToast("Taxa % deve estar entre 0 e 100.", "error"); return; }
+  if(isBoleto && !(Number.isFinite(fixaN) && fixaN>=0)){ addToast("Taxa fixa (R$) inválida.", "error"); return; }
+  const rec = { id: uid(), forma, descricao: desc, taxaPerc: Number(percN||0), taxaFixa: Number(fixaN||0) };
+  state.payConds=[rec, ...state.payConds];
+  persistAll(); addToast("Condição adicionada."); renderFormas();
+  prm.fpDesc.value=""; prm.fpPct.value="0,00%"; if(isBoleto) prm.fpFixa.value="R$ 1,95";
+  if(saidaDOM.forma.value && (saidaDOM.forma.value===forma)){ populateCondicoesForForma(); }
+});
+function openEditCond(t){
+  $("#modal-title").textContent="Editar condição";
+  const pctStr = `${(Number(t.taxaPerc||0)).toFixed(2).replace(".",",")}%`;
+  const fixaStr = BRL.format(Number(t.taxaFixa||0));
+  $("#modal-content").innerHTML = `
+    <div class="grid grid-fit">
+      <div>
+        <label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Forma *</label>
+        <select id="edit-forma" class="input">
+          <option ${t.forma==="PIX"?"selected":""}>PIX</option>
+          <option ${t.forma==="Crédito"?"selected":""}>Crédito</option>
+          <option ${t.forma==="Débito"?"selected":""}>Débito</option>
+          <option ${t.forma==="Dinheiro"?"selected":""}>Dinheiro</option>
+          <option ${t.forma==="Boleto"?"selected":""}>Boleto</option>
+        </select>
+      </div>
+      <div>
+        <label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Descrição *</label>
+        <input id="edit-desc" class="input" value="${escapeHtml(t.descricao||"")}">
+        <div id="edit-desc-err" class="err-msg" aria-live="polite"></div>
+      </div>
+      <div id="edit-pct-wrap">
+        <label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Taxa %</label>
+        <input id="edit-pct" class="input" value="${escapeHtml(pctStr)}">
+      </div>
+      <div id="edit-fixa-wrap">
+        <label class="mb-2" style="display:block;font-weight:600;color:var(--slate-700)">Taxa fixa (R$)</label>
+        <input id="edit-fixa" class="input" value="${escapeHtml(fixaStr)}">
+      </div>
+    </div>
+  `;
+  $("#modal-actions").style.display="flex";
+  $("#modal").classList.remove("hidden");
+  const fSel=$("#edit-forma"), dInp=$("#edit-desc"), pctInp=$("#edit-pct"), fixInp=$("#edit-fixa");
+  const pctWrap=$("#edit-pct-wrap"), fixWrap=$("#edit-fixa-wrap");
+  const toggleEditTax = ()=>{ const isBol = (fSel.value||"") === "Boleto"; classToggle(pctWrap, !isBol); classToggle(fixWrap, isBol); };
+  toggleEditTax();
+  fSel.addEventListener("change", toggleEditTax);
+  pctInp.addEventListener("input", ()=>{ pctInp.value = maskPctInput(pctInp.value); });
+  fixInp.addEventListener("input", ()=>{ fixInp.value = maskBRLInput(fixInp.value); });
+  const off=()=>{ $("#modal").classList.add("hidden"); $("#modal-actions").style.display="none"; };
+  $("#modal-cancel").onclick=off; $("#modal-close").onclick=off;
+  $("#modal-confirm").onclick=()=>{
+    const forma=(fSel.value||"").trim();
+    const desc=(dInp.value||"").trim();
+    const isBol = forma==="Boleto";
+    const pctN = parsePercNumber(pctInp.value||"0");
+    const fixaN = isBol ? parseBRL(fixInp.value||"R$ 0,00") : 0;
+    $("#edit-desc-err").textContent="";
+    if(!forma){ addToast("Selecione a Forma.","error"); return; }
+    if(!desc){ $("#edit-desc-err").textContent="Informe a descrição."; addToast("Descrição é obrigatória.","error"); return; }
+    if(!isBol && !(Number.isFinite(pctN) && pctN>=0 && pctN<=100)){ addToast("Taxa % deve estar entre 0 e 100.","error"); return; }
+    if(isBol && !(Number.isFinite(fixaN) && fixaN>=0)){ addToast("Taxa fixa (R$) inválida.", "error"); return; }
+    const updated = { ...t, forma, descricao:desc, taxaPerc: isBol? 0 : Number(pctN||0), taxaFixa: isBol? Number(fixaN||0) : 0 };
+    state.payConds = safeArr(state.payConds).map(x=> x.id===t.id ? updated : x);
+    persistAll(); renderFormas();
+    const selectedId = (saidaDOM.cond.value||"").trim();
+    if(selectedId===t.id){
+      if(saidaDOM.forma.value === updated.forma){ previewLiquido(); }
+      else{ populateCondicoesForForma(); previewLiquido(); }
+    }
+    addToast("Condição atualizada."); off();
+  };
+}
+function renderFormas(){
+  const rows=safeArr(state.payConds);
+  updatePayCondsCollapseUI();
+  const toggleBtn=$("#fp-toggle");
+  if(toggleBtn){ toggleBtn.onclick=()=>{ state.payCondsCollapsed = !state.payCondsCollapsed; persistAll(); updatePayCondsCollapseUI(); }; }
+  const tbody=$("#fp-body"); if(!tbody) return; tbody.innerHTML="";
+  rows.forEach(t=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML=`<td>${escapeHtml(t.forma)}</td><td>${escapeHtml(t.descricao||"—")}</td><td>${(Number(t.taxaPerc||0)).toFixed(2).replace(".",",")}%</td><td>${BRL.format(Number(t.taxaFixa||0))}</td>
+      <td><button class="btn btn-sky" style="min-height:28px">Editar</button> <button class="btn btn-rose" style="min-height:28px">Excluir</button></td>`;
+    const [btnEdit,btnDel]=tr.querySelectorAll("button");
+    btnEdit.addEventListener("click",()=>openEditCond(t));
+    btnDel.addEventListener("click",()=>{
+      confirmAction("Tem certeza?", `Excluir a condição <strong>${escapeHtml(t.descricao)}</strong> (${escapeHtml(t.forma)})?`, ()=>{
+        const wasSelected = (saidaDOM.cond.value||"").trim()===t.id;
+        state.payConds=state.payConds.filter(x=>x!==t); persistAll(); renderFormas();
+        if(wasSelected){ populateCondicoesForForma(); previewLiquido(); }
+      });
+    });
+    tbody.appendChild(tr);
+  });
+  updatePayCondsCollapseUI();
+  toggleFixa();
+}
+/* ===== Painel – cálculos ===== */
+function businessDaysBetween(startISO,endISO){ let d=new Date(startISO), end=new Date(endISO); let c=0; for(; d<=end; d.setDate(d.getDate()+1)){ const day=d.getDay(); if(day >=1 && day <=5) c++; } return c; }
+function valorBrutoLinha(l){
+  const bruto=parseBRL(l.valorBruto||"R$ 0,00");
+  const desc =parseBRL(l.desconto||"R$ 0,00");
+  const acr =parseBRL(l.acrescimo||"R$ 0,00");
+  return Math.max(0, bruto - desc + acr);
+}
+function valorLiquidoLinha(l){
+  const base = valorBrutoLinha(l);
+  const forma = l.forma||"";
+  let liq = base;
+  const cond = l.condicaoId ? getCondById(l.condicaoId) : null;
+  if(cond){
+    if(forma==="Boleto"){
+      liq = base - Number(cond.taxaFixa||0);
+    }else {
+      liq = base - (base * (clamp(Number(cond.taxaPerc||0),0,100)/100));
+    }
+  }else{
+    const pctAntigo = parsePct(l.taxaPct||"0");
+    if(forma==="Boleto"){
+      liq = base;
+    } else {
+      liq = base * (1 - pctAntigo);
+    }
+  }
+  return liq>=0 ? liq : 0;
+}
+function custoLinhaRecap(l){
+  if(l.srv_grupoLabel !== "Recapagem") return 0;
+  if(l.insumos?.length) return l.insumos.reduce((s,i)=>s + Number(i.qtd||0) * Number(i.custo||0),0);
+  const busca = {
+    banda: normText(l.banda),
+    largura: normText(l.largura),
+    tamanho: (l.tam||"").trim().toUpperCase(),
+    medida: normText(l.medida),
+    tipoBanda: normText(l.tipoBanda||l.banda),
+    tipoPneu: normText(l.tipoPneu||"")
+  };
+  const allInsumos = [...state.insumosImportado, ...state.insumosManual];
+  const insumo = allInsumos.find(i=> i.ativo==="S" &&
+    normText(i.banda)===busca.banda &&
+    normText(i.largura)===busca.largura &&
+    (i.tamanho||"").trim().toUpperCase()===busca.tamanho &&
+    normText(i.medida)===busca.medida &&
+    normText(i.tipoBanda)===busca.tipoBanda &&
+    normText(i.tipoPneu)===busca.tipoPneu
+  );
+  return (insumo ? Number(insumo.custoInsumo||0) : 0) * Number(l.insumos?.reduce((s,i)=>s + Number(i.qtd||0),0) || l.qtdPneu||0);
+}
+function isSameMonth(iso,yyyymm){ return (iso||"").slice(0,7)===yyyymm; }
+function inPeriodo(iso){
+  if(state.periodo.ativo){
+    const a=parseISOorBR(state.periodo.de), b=parseISOorBR(state.periodo.ate);
+    return !!iso && !!a && !!b && iso>=a && iso<=b;
+  }
+  return isSameMonth(iso, currentCompetencia());
+}
+function applyServicoFilter(arr){
+  const sel = state.filtroServico || "ALL";
+  if(sel==="ALL") return arr;
+  if(sel.startsWith("G:")){
+    const gid = sel.slice(2);
+    const g = getGrupoById(gid);
+    const gLabel = g?.label || "";
+    return arr.filter(l=> (l.srv_grupoId===gid) || (gLabel && String(l.servico||"").startsWith(gLabel)));
+  }
+  if(sel.startsWith("S:")){
+    const sid = sel.slice(2);
+    const s = getSubById(sid);
+    const g = s? getGrupoById(s.grupoId): null;
+    const str = g && s ? `${g.label} – ${s.label}` : "";
+    return arr.filter(l=> (l.srv_subId===sid) || (str && String(l.servico||"")===str));
+  }
+  return arr.filter(l=> (l.servico||"")===sel);
+}
+function linhasPeriodoTodas(){ return applyServicoFilter( safeArr(state.saidaLinhas).filter(l=>inPeriodo(l.dataServico)) ); }
+function linhasBasePainel(){ let arr = safeArr(state.saidaLinhas).filter(l=>l.status==="Faturada").filter(l=>inPeriodo(l.dataServico)); return applyServicoFilter(arr); }
+function donutColor(i){ const p=["#0ea5e9","#38bdf8","#7dd3fc","#bae6fd","#34d399","#a7f3d0","#fde68a","#fda4af","#fca5a5","#bef264"]; return p[i%p.length]; }
+function dayRef(){ if(state.periodo.ativo) return state.periodo.ate; const comp=currentCompetencia(); if(isSameMonth(TODAY_ISO,comp)) return TODAY_ISO; return endOfMonth(comp); }
+function roundByHalfRule(x){ const f=Math.floor(x); const frac=x - f; return frac >= 0.5 ? f+1 : f; }
+function keyFromGrupoLabel(lbl){
+  const s = slugify(lbl||"").replace(/-de-/g,"-");
+  if(s.includes("conser")) return "consertos";
+  if(s.includes("borrach")) return "borracharia";
+  if(s.includes("venda") && s.includes("pneu")) return "vendaPneus";
+  return "";
+}
+function daysBetween(a,b){ if(!a || !b) return 0; const d1 = new Date(a), d2 = new Date(b); return Math.round((d2 - d1)/(1000*60*60*24)); }
+/* Painel render */
+function renderPainel(){
+  setCompetenciaLabel(); hydrateServicoOptions();
+  classToggle($("#pill-periodo"), state.periodo.ativo);
+  if(state.periodo.ativo){ $("#pill-periodo-text").textContent = `${formatDateDisplay(state.periodo.de)} – ${formatDateDisplay(state.periodo.ate)}`; }
+  const base = linhasBasePainel();
+  const yyyymm=currentCompetencia();
+  const metas = state.metas[yyyymm] || {diasTrabalhados:0,recapMes:0,faturamentoMes:{ouro:0,prata:0,bronze:0},faturamentoServicos:{consertos:0,borracharia:0,vendaPneus:0}};
+  const diasTrab = Number(metas.diasTrabalhados||0);
+  const metaMensalExata = Number(metas.recapMes||0);
+  const metaDiariaExata = diasTrab>0 ? (metaMensalExata/diasTrab) : 0;
+  const metaDiariaMostrada = roundByHalfRule(metaDiariaExata);
+  const refDia = dayRef();
+  const realizadoDia = base.filter(l=>l.dataServico===refDia).reduce((a,l)=>a+Number(l.insumos?.reduce((s,i)=>s + Number(i.qtd||0),0) || l.qtdPneu||0),0);
+  const pctDia = metaDiariaMostrada>0 ? (realizadoDia/metaDiariaMostrada*100) : 0;
+  $("#recap-dia-real").textContent = realizadoDia;
+  $("#recap-dia-meta").textContent = metaDiariaMostrada;
+  $("#recap-dia-pct").textContent = `${clamp(Math.round(pctDia),0,999)}%`;
+  $("#recap-dia-bar").style.width = `${clamp(pctDia,0,100)}%`;
+  const recapAcum = base.reduce((a,l)=>a+Number(l.insumos?.reduce((s,i)=>s + Number(i.qtd||0),0) || l.qtdPneu||0),0);
+  let metaAcumPeriodo = metaMensalExata;
+  if(state.periodo.ativo){
+    const diasUtil = businessDaysBetween(state.periodo.de,state.periodo.ate);
+    metaAcumPeriodo = diasTrab>0 ? (metaMensalExata * (diasUtil/diasTrab)) : 0;
+  }
+  const pctAcum = metaAcumPeriodo>0 ? (recapAcum/metaAcumPeriodo*100) : 0;
+  $("#recap-acum-real").textContent = Math.round(recapAcum);
+  $("#recap-acum-meta").textContent = Math.round(metaAcumPeriodo);
+  $("#recap-acum-pct").textContent = `${clamp(Math.round(pctAcum),0,999)}%`;
+  $("#recap-acum-bar").style.width = `${clamp(pctAcum,0,100)}%`;
+  $("#meta-dia").textContent = metaDiariaMostrada;
+  $("#meta-semana").textContent = metaDiariaMostrada*6;
+  $("#meta-mes").textContent = metaMensalExata||0;
+  $("#meta-pct").textContent = `${clamp(Math.round(pctAcum),0,999)}%`;
+  const fatBruto = base.reduce((a,l)=>a+valorBrutoLinha(l),0);
+  $("#fat-mes-bruto").textContent = BRL.format(fatBruto);
+  const metasFat = metas.faturamentoMes || {};
+  const metaOuro = Number(metasFat.ouro||0);
+  const metaPrata = Number(metasFat.prata||0);
+  const metaBronze = Number(metasFat.bronze||0);
+  const pctFor = (meta)=>{ let p = meta>0 ? (fatBruto/meta)*100 : 0; p = clamp(Number.isFinite(p)?p:0, 0, 100); return p; };
+  const fmt2 = n => `${n.toFixed(2).replace(".",",")}%`;
+  const pOuro=pctFor(metaOuro), pPrata=pctFor(metaPrata), pBronze=pctFor(metaBronze);
+  $("#meta-ouro").textContent=`meta: ${BRL.format(metaOuro)}`; $("#pct-meta-ouro").textContent=fmt2(pOuro); $("#bar-meta-ouro").style.width=`${pOuro}%`;
+  $("#meta-prata").textContent=`meta: ${BRL.format(metaPrata)}`; $("#pct-meta-prata").textContent=fmt2(pPrata); $("#bar-meta-prata").style.width=`${pPrata}%`;
+  $("#meta-bronze").textContent=`meta: ${BRL.format(metaBronze)}`; $("#pct-meta-bronze").textContent=fmt2(pBronze); $("#bar-meta-bronze").style.width=`${pBronze}%`;
+  const totalLiq = base.reduce((a,l)=>a+valorLiquidoLinha(l),0);
+  const margemPct = (fatBruto>0 ? (totalLiq/fatBruto) : 0);
+  const recapLines = base.filter(l => l.srv_grupoLabel === "Recapagem");
+  const recapBruto = recapLines.reduce((a,l)=>a+valorBrutoLinha(l),0);
+  const recapLiq = recapLines.reduce((a,l)=>a+valorLiquidoLinha(l),0);
+  const recapCusto = recapLines.reduce((a,l)=>a + custoLinhaRecap(l),0);
+  const margemRecap = recapLiq - recapCusto;
+  const pctRecap = recapBruto>0 ? (margemRecap / recapBruto*100) : 0;
+  // Mix pagamento
+  const mixMap=new Map(); let mixTotal=0;
+  base.forEach(l=>{ const v=valorLiquidoLinha(l); mixTotal+=v; mixMap.set(l.forma,(mixMap.get(l.forma)||0)+v); });
+  const mixData=Array.from(mixMap.entries()).map(([name,value])=>({name,value})).sort((a,b)=>b.value-a.value);
+  $("#mix-total").textContent = BRL.format(mixTotal);
+  renderDonut(mixData);
+  const mixBody=$("#mix-body"); mixBody.innerHTML="";
+  classToggle($("#mix-list"), mixData.length>0);
+  classToggle($("#mix-empty"), mixData.length===0);
+  mixData.forEach((d,i)=>{
+    const tr=document.createElement("tr");
+    const pct = mixTotal>0 ? (d.value/mixTotal)*100 : 0;
+    tr.style.backgroundColor = donutColor(i) + "20";
+    tr.title = `Forma: ${d.name}, Valor: ${BRL.format(d.value)}, %: ${pct.toFixed(1)}`;
+    tr.innerHTML=`<td>${escapeHtml(d.name||"—")}</td><td>${BRL.format(d.value)}</td><td>${pct.toFixed(1)}%</td>`;
+    mixBody.appendChild(tr);
+  });
+  // KPI Meta por Serviço (R$)
+  const metasSrv = metas.faturamentoServicos || {consertos:0,borracharia:0,vendaPneus:0};
+  const sel = state.kpiServicoSel || "consertos";
+  $("#kpi-servico-select").value = sel;
+  const realizadoPorGrupo = {consertos:0,borracharia:0,vendaPneus:0};
+  base.forEach(l=>{
+    const key = keyFromGrupoLabel(l.srv_grupoLabel || (l.servico||"").split(" – ")[0] || "");
+    if(key && realizadoPorGrupo[key]!=null){ realizadoPorGrupo[key] += valorBrutoLinha(l); }
+  });
+  const metaSel = Number(metasSrv[sel]||0);
+  const realSel = Number(realizadoPorGrupo[sel]||0);
+  const pctSel = metaSel>0 ? clamp((realSel/metaSel)*100,0,100) : 0;
+  $("#kpi-servico-meta").textContent = BRL.format(metaSel);
+  $("#kpi-servico-real").textContent = BRL.format(realSel);
+  $("#kpi-servico-pct").textContent = `${pctSel.toFixed(2).replace(".",",")}%`;
+  $("#kpi-servico-bar").style.width = `${pctSel}%`;
+  // NF KPI
+  const nfSource = nfGetSource();
+  const nfTotalValor = nfSource.reduce((s,l)=>s+valorBrutoLinha(l),0);
+  const totalOS = safeArr(state.saidaLinhas).filter(l=>inPeriodo(l.dataServico)).length;
+  const osPct = totalOS>0 ? clamp((nfSource.length/totalOS)*100,0,100) : 0;
+  $("#nf-total").textContent = BRL.format(nfTotalValor);
+  $("#nf-count").textContent = `#OS em aberto: ${nfSource.length}`;
+  $("#nf-bar").style.width = `${osPct}%`;
+  renderNaoFaturadasTabela();
+  renderTopClientes(base);
+  // Novo KPI Ciclo
+  const ciclos = base.filter(l=> l.dataColeta && l.dataEntrega && l.srv_grupoLabel === "Recapagem").map(l=> daysBetween(l.dataColeta, l.dataEntrega));
+  const avgCiclo = ciclos.length > 0 ? ciclos.reduce((a,b)=>a+b,0)/ciclos.length : 0;
+  $("#ciclo-medio").textContent = `${Math.round(avgCiclo)} dias`;
+  // OS Canceladas
+  const canceladasSource = safeArr(state.saidaLinhas).filter(l=>l.status==="Cancelada" && inPeriodo(l.dataServico));
+  const canceladas = canceladasSource.length;
+  const pctCancel = totalOS>0 ? (canceladas/totalOS*100).toFixed(1) : 0;
+  $("#cancel-count").textContent = canceladas;
+  $("#cancel-pct").textContent = `${pctCancel}%`;
+  renderCanceladasTabela(canceladasSource);
+  // Desempenho por Vendedor
+  const vendSelEl = $("#filtro-vendedor");
+  if(vendSelEl){
+    vendSelEl.innerHTML = '<option value="ALL">Todos</option>';
+    safeArr(state.vendedores).filter(v=>v.status==="Ativo").sort((a,b)=>a.nome.localeCompare(b.nome,'pt-BR')).forEach(v=>{
+      const opt = document.createElement("option");
+      opt.value = v.id;
+      opt.textContent = v.nome;
+      vendSelEl.appendChild(opt);
+    });
+    vendSelEl.value = state.filtroVendedor;
+    vendSelEl.addEventListener("change", (e)=>{ state.filtroVendedor = e.target.value; persistAll(); renderPainel(); });
+  }
+  const vendSel = state.filtroVendedor;
+  let filteredVend = base;
+  if(vendSel !== "ALL"){
+    filteredVend = base.filter(l=>l.vendedorId === vendSel);
+  }
+  const totalBruto = base.reduce((a,l)=>a+valorBrutoLinha(l),0);
+  const brutoVend = filteredVend.reduce((a,l)=>a+valorBrutoLinha(l),0);
+  const pctBrutoVend = totalBruto > 0 ? (brutoVend / totalBruto * 100).toFixed(1) : 0;
+  const liqVend = filteredVend.reduce((a,l)=>a+valorLiquidoLinha(l),0);
+  const pctRetencao = brutoVend > 0 ? (liqVend / brutoVend * 100).toFixed(1) : 0;
+  const recapVend = filteredVend.filter(l => l.srv_grupoLabel === "Recapagem");
+  const recapBrutoVend = recapVend.reduce((a,l)=>a+valorBrutoLinha(l),0);
+  const recapLiqVend = recapVend.reduce((a,l)=>a+valorLiquidoLinha(l),0);
+  const recapCustoVend = recapVend.reduce((a,l)=>a + custoLinhaRecap(l),0);
+  const margemRecapVend = recapLiqVend - recapCustoVend;
+  const pctRecapVend = recapBrutoVend>0 ? (margemRecapVend / recapBrutoVend*100).toFixed(1) : 0;
+  $("#vend-bruto").textContent = BRL.format(brutoVend);
+  $("#vend-bruto-pct").textContent = `(${pctBrutoVend}%)`;
+  $("#vend-liq").textContent = BRL.format(liqVend);
+  $("#vend-liq-pct").textContent = `(${pctRetencao}%)`;
+  $("#vend-margem-recap-valor").textContent = BRL.format(margemRecapVend);
+  $("#vend-margem-recap-valor").className = margemRecapVend >= 0 ? "positive" : "negative";
+  $("#vend-margem-recap-pct").textContent = `${pctRecapVend}%`;
+  $("#vend-margem-recap-pct").className = margemRecapVend >= 0 ? "positive" : "negative";
+}
+/* ===== Render Canceladas Tabela ===== */
+function renderCanceladasTabela(rows){
+  const wrap=$("#canceladas-wrap"), collapsed=$("#canceladas-collapsed"), tbody=$("#canceladas-body");
+  const btnToggle=$("#btn-toggle-canceladas");
+  const expanded = btnToggle.getAttribute("aria-expanded")==="true";
+  classToggle(wrap, expanded);
+  classToggle(collapsed, !expanded);
+  tbody.innerHTML="";
+  collapsed.innerHTML="";
+  rows.forEach(l=>{
+    const tr=document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(l.cliente||"—")}</td>
+      <td>${escapeHtml(l.os||"—")}</td>
+      <td>${formatDateDisplay(l.dataEntrega||l.dataServico||'')}</td>
+      <td>${escapeHtml(l.obs||"—")}</td>
+    `;
+    tbody.appendChild(tr);
+  });
+  btnToggle.onclick=()=>{ const isExp = btnToggle.getAttribute("aria-expanded")==="true"; btnToggle.setAttribute("aria-expanded", String(!isExp)); btnToggle.textContent = isExp?"▼":"▲"; renderCanceladasTabela(rows); };
+  if(rows.length===0){ classToggle($("#canceladas-section"),false); } else { classToggle($("#canceladas-section"),true); }
+}
+/* Top Clientes */
+function renderTopClientes(base){
+  const topWrap=$("#top-wrap"), topEmpty=$("#top-empty");
+  if(!base.length){ topEmpty.classList.remove("hidden"); topWrap.classList.add("hidden"); return; }
+  topEmpty.classList.add("hidden"); topWrap.classList.remove("hidden");
+  const aggMap=new Map();
+  base.forEach(l=>{
+    const key=(l.cliente||"(sem cliente)").trim() || "(sem cliente)";
+    const bruto=valorBrutoLinha(l);
+    const liq=valorLiquidoLinha(l);
+    const cur=aggMap.get(key)||{bruto:0,liq:0,os:0};
+    cur.bruto+=bruto; cur.liq+=liq; cur.os+=1; aggMap.set(key,cur);
+  });
+  const rows=Array.from(aggMap.entries()).map(([cliente,agg])=>{
+    const os = Number(agg.os||0);
+    const ticket = os>0 ? (agg.bruto/os) : 0;
+    return { cliente, bruto:agg.bruto, liq:agg.liq, os, ticket };
+  }).sort((a,b)=> (b.bruto-a.bruto) || (b.liq-a.liq) || a.cliente.localeCompare(b.cliente,'pt-BR'));
+  const top5 = rows.slice(0,5);
+  const rest = rows.slice(5);
+  const globalBruto = rows.reduce((a,r)=>a+r.bruto,0);
+  const pctStr = (p)=>`${(clamp(Number.isFinite(p)?p:0,0,100)).toFixed(2).replace(".",",")}%`;
+  state.clientSearch = $("#clients-search").value||"";
+  const search = normText(state.clientSearch||""); const match = (name)=> search ? normText(name).includes(search) : true;
+  const tbTop=$("#top-body-top5"); tbTop.innerHTML="";
+  top5.forEach(r=>{
+    const shareGlobal = globalBruto>0 ? (r.bruto/globalBruto)*100 : 0;
+    const tr=document.createElement("tr");
+    tr.innerHTML = `<td><span style="font-weight:600;color:var(--slate-800)">${escapeHtml(r.cliente)}</span></td>
+      <td>${BRL.format(r.bruto)}</td><td>${BRL.format(r.liq)}</td><td>${pctStr(shareGlobal)}</td><td>${r.os}</td><td>${BRL.format(Math.max(0,r.ticket))}</td>`;
+    tr.style.display = match(r.cliente) ? "" : "none";
+    tbTop.appendChild(tr);
+  });
+  const restWrap=$("#top-rest-wrap"), restCollapsed=$("#top-rest-collapsed");
+  const tbRest=$("#top-body-rest"); tbRest.innerHTML="";
+  restCollapsed.innerHTML="";
+  if(rest.length){
+    rest.slice(0,8).forEach(r=>{
+      const span=document.createElement("span");
+      span.className="pill";
+      span.textContent=`${r.cliente} · ${BRL.format(r.bruto)}`;
+      if(!match(r.cliente)) span.style.display="none";
+      restCollapsed.appendChild(span);
+    });
+    rest.forEach(r=>{
+      const shareGlobal = globalBruto>0 ? (r.bruto/globalBruto)*100 : 0;
+      const tr=document.createElement("tr");
+      tr.innerHTML = `<td><span style="font-weight:600;color:var(--slate-800)">${escapeHtml(r.cliente)}</span></td>
+        <td>${BRL.format(r.bruto)}</td><td>${BRL.format(r.liq)}</td><td>${pctStr(shareGlobal)}</td><td>${r.os}</td><td>${BRL.format(Math.max(0,r.ticket))}</td>`;
+      tr.style.display = match(r.cliente) ? "" : "none";
+      tbRest.appendChild(tr);
+    });
+  }
+  const totalBruto = rows.reduce((s,r)=>s+r.bruto,0);
+  const totalLiq = rows.reduce((s,r)=>s+r.liq,0);
+  const totalOS = rows.reduce((s,r)=>s+r.os,0);
+  const totalTicket= totalOS>0 ? totalBruto/totalOS : 0;
+  $("#tall-bruto").textContent=BRL.format(totalBruto);
+  $("#tall-liq").textContent=BRL.format(totalLiq);
+  $("#tall-os").textContent=String(totalOS);
+  $("#tall-ticket").textContent=BRL.format(totalTicket);
+  const t5b = top5.reduce((s,r)=>s+r.bruto,0);
+  const t5l = top5.reduce((s,r)=>s+r.liq,0);
+  const t5o = top5.reduce((s,r)=>s+r.os,0);
+  const t5t = t5o>0 ? t5b/t5o : 0;
+  $("#ttop5-bruto").textContent=BRL.format(t5b);
+  $("#ttop5-liq").textContent=BRL.format(t5l);
+  $("#ttop5-os").textContent=String(t5o);
+  $("#ttop5-ticket").textContent=BRL.format(t5t);
+  $("#top-total-top5").classList.toggle("hidden", top5.length===0);
+  const btnRest=$("#btn-toggle-rest");
+  const expanded = btnRest.getAttribute("aria-expanded")==="true";
+  classToggle(restWrap, expanded);
+  classToggle(restCollapsed, !expanded);
+  btnRest.onclick=()=>{ const isExp = btnRest.getAttribute("aria-expanded")==="true"; btnRest.setAttribute("aria-expanded", String(!isExp)); btnRest.textContent = isExp?"▼":"▲"; renderTopClientes(base); };
+  $("#clients-search").oninput = nfDebounce(()=>renderTopClientes(base), 120);
+}
+/* ===== NF (não faturadas) ===== */
+function nfGetSource(){
+  let src = safeArr(state.saidaLinhas).filter(s=>s?.status==="Pendente de serviço" || s?.status==="Pendente de entrega");
+  if(state.nfFiltroStatus !== "Todos") src = src.filter(s => s.status === state.nfFiltroStatus);
+  return src;
+}
+$("#nf-search").addEventListener("input", (e)=>{ state.nfSearchTerm = e.target.value||""; renderNaoFaturadasTabela(); });
+$$('#nf-table thead .sortable').forEach(h=>{
+  h.addEventListener("click",()=>{
+    const key=h.getAttribute("data-sort");
+    if(state.nfSort.key===key){ state.nfSort.dir = state.nfSort.dir==="asc"?"desc":"asc"; }
+    else{ state.nfSort.key=key; state.nfSort.dir="asc"; }
+    renderNaoFaturadasTabela();
+  });
+});
+function renderNaoFaturadasTabela(){
+  const wrap=$("#nf-wrap"), empty=$("#nf-empty"), tbody=$("#nf-body");
+  const search = normText(state.nfSearchTerm||"");
+  let rows = nfGetSource().map(l=>({
+    id:l.id, cliente:l.cliente||"(sem cliente)", forma:l.forma||"", valorb:valorBrutoLinha(l), liq:valorLiquidoLinha(l), data:l.dataServico||TODAY_ISO,
+    os:l.os||"", servico:l.servico||"", raw:l
+  }));
+  if(search){
+    rows = rows.filter(r=> [r.cliente,r.forma,r.os,r.servico].some(v=>normText(v).includes(search)));
+  }
+  const {key,dir}=state.nfSort;
+  rows.sort((a,b)=>{
+    let va=a[key], vb=b[key];
+    if(key==="cliente"||key==="forma"||key==="servico"||key==="os"){ return dir==="asc" ? String(va).localeCompare(String(vb),'pt-BR') : String(vb).localeCompare(String(va),'pt-BR'); }
+    if(key==="valorb"||key==="liq"){ return dir==="asc" ? (va-vb) : (vb-va); }
+    if(key==="data"){ return dir==="asc" ? (a.data.localeCompare(b.data)) : (b.data.localeCompare(a.data)); }
+    return 0;
+  });
+  classToggle(wrap, rows.length>0);
+  classToggle(empty, rows.length===0);
+  tbody.innerHTML="";
+  let tBr=0,tLq=0;
+  rows.forEach(r=>{
+    tBr+=r.valorb; tLq+=r.liq;
+    const tr=document.createElement("tr");
+    tr.innerHTML = `
+      <td>${escapeHtml(r.cliente)}</td>
+      <td>${escapeHtml(r.forma||"—")}</td>
+      <td>${BRL.format(r.valorb)}</td>
+      <td>${BRL.format(r.liq)}</td>
+      <td>${formatDateDisplay(r.data)}</td>
+      <td>
+        <button class="btn btn-ghost" style="min-height:28px" data-act="edit">Editar</button>
+      </td>
+    `;
+    tr.querySelector('[data-act="edit"]').addEventListener("click",()=>{ const found=state.saidaLinhas.find(x=>x.id===r.id); if(found){ state.editingId=r.id; openTab("saida"); carregarFichaSaidaParaEdicao(r.id); } });
+    tbody.appendChild(tr);
+  });
+  $("#nf-total-bruto").textContent = BRL.format(tBr);
+  $("#nf-total-liq").textContent = BRL.format(tLq);
+}
+function setStatusById(id,status){
+  state.saidaLinhas = state.saidaLinhas.map(l=>l.id===id ? {...l,status} : l);
+  persistAll(); addToast(`OS ${status==="Faturada"?"faturada":"atualizada"}.`); renderAll();
+}
+/* ===== Saída – Tabela completa ===== */
+$("#btn-export-pdf-saida").addEventListener("click",()=>{
+  if(state.selectedFichasSaida.size === 0){
+    addToast("Selecione ao menos uma ficha para exportar.","error");
+    return;
+  }
+  printFichas(Array.from(state.selectedFichasSaida));
+});
+$("#btn-clear-filtros-saida").addEventListener("click",()=>{ state.filtroSaida={ dia:"", mes:"", sortKey:"data", sortDir:"desc"}; $("#flt-dia").value=""; $("#flt-mes").value=""; renderSaidaTabela(); });
+$("#flt-dia").addEventListener("change",(e)=>{ state.filtroSaida.dia = parseISOorBR(e.target.value)||""; renderSaidaTabela(); });
+$("#flt-mes").addEventListener("change",(e)=>{ state.filtroSaida.mes = e.target.value||""; renderSaidaTabela(); });
+$$('#view-saida thead .sortable').forEach(h=>{
+  h.addEventListener("click",()=>{
+    const key=h.getAttribute("data-sort");
+    if(state.filtroSaida.sortKey===key){ state.filtroSaida.sortDir = state.filtroSaida.sortDir==="asc"?"desc":"asc"; }
+    else{ state.filtroSaida.sortKey=key; state.filtroSaida.sortDir="asc"; }
+    renderSaidaTabela();
+  });
+});
+$("#select-all-saida").addEventListener("change",(e)=>{
+  const checked = e.target.checked;
+  state.selectedFichasSaida = checked ? new Set(state.saidaLinhas.map(l=>l.id)) : new Set();
+  $$(".select-saida").forEach(chk=>chk.checked = checked);
+});
+function renderSaidaTabela(){
+  const wrap=$("#saida-wrap"), empty=$("#saida-empty"), tbody=$("#saida-body");
+  let rows = safeArr(state.saidaLinhas);
+  const {dia,mes,sortKey,sortDir}=state.filtroSaida;
+  rows = rows.filter(l=>{
+    const d = l.dataServico||"";
+    if(dia && d!==dia) return false;
+    if(mes && d.slice(0,7)!==mes) return false;
+    return true;
+  }).sort((a,b)=>{
+    let va=a[sortKey], vb=b[sortKey];
+    if(sortKey==="data"){ va=a.dataServico||""; vb=b.dataServico||""; }
+    if(typeof va==="string"){ const r = va.localeCompare(vb,'pt-BR'); return sortDir==="asc"?r:-r; }
+    return sortDir==="asc" ? (va-vb) : (vb-va);
+  });
+  classToggle(wrap, rows.length>0); classToggle(empty, rows.length===0);
+  tbody.innerHTML="";
+  let tBr=0, tLq=0;
+  rows.forEach(l=>{
+    const tr=document.createElement("tr");
+    const bruto=valorBrutoLinha(l); const liq=valorLiquidoLinha(l);
+    tBr+=bruto; tLq+=liq;
+    const pneus = l.insumos?.reduce((s,i)=>s + Number(i.qtd||0),0) || Number(l.qtdPneu||0);
+    tr.innerHTML = `
+      <td><input type="checkbox" class="select-saida" data-id="${l.id}"></td>
+      <td>${formatDateDisplay(l.dataColeta||'')} / ${formatDateDisplay(l.dataServico||'')} / ${formatDateDisplay(l.dataEntrega||'')}</td>
+      <td>${escapeHtml(l.os||"")}</td>
+      <td>${escapeHtml(l.cliente||"—")}</td>
+      <td>${escapeHtml(l.servico||l.srv_grupoLabel||"—")}</td>
+      <td>${pneus}</td>
+      <td>${escapeHtml(l.forma||"—")}</td>
+      <td>${BRL.format(bruto)}</td>
+      <td>${BRL.format(liq)}</td>
+      <td>${escapeHtml(l.status||"Pendente de serviço")}</td>
+      <td class="no-print">
+        <button class="btn btn-sky" style="min-height:28px" data-act="edit">Editar</button>
+        <button class="btn btn-rose" style="min-height:28px" data-act="del">Excluir</button>
+      </td>
+    `;
+    const chk = tr.querySelector(".select-saida");
+    chk.checked = state.selectedFichasSaida.has(l.id);
+    chk.addEventListener("change",()=>{ if(chk.checked) state.selectedFichasSaida.add(l.id); else state.selectedFichasSaida.delete(l.id); });
+    tr.querySelector('[data-act="edit"]').addEventListener("click",()=>{ state.editingId=l.id; carregarFichaSaidaParaEdicao(l.id); addToast(`Editando OS ${l.os}.`,"info"); });
+    tr.querySelector('[data-act="del"]').addEventListener("click",()=>{ confirmAction("Excluir lançamento", `Excluir a OS <strong>${escapeHtml(l.os||"")}</strong>?`, ()=>{
+      state.saidaLinhas = state.saidaLinhas.filter(x=>x.id!==l.id);
+      persistAll(); renderAll(); addToast("Excluído.");
+    }); });
+    tbody.appendChild(tr);
+  });
+  $("#saida-total-bruto").textContent = BRL.format(tBr);
+  $("#saida-total-liq").textContent = BRL.format(tLq);
+  $("#chip-comp-saida").textContent = `Comp.: ${monthNamePt(currentCompetencia())}`;
+  $("#chip-periodo-saida").textContent = state.periodo.ativo ? `Período: ${formatDateDisplay(state.periodo.de)}–${formatDateDisplay(state.periodo.ate)}` : "Período: mês completo";
+  $("#chip-linhas-saida").textContent = `Linhas: ${rows.length}`;
+  $("#chip-bruto-saida").textContent = `Bruto: ${BRL.format(tBr)}`;
+  $("#select-all-saida").checked = state.selectedFichasSaida.size === rows.length;
+}
+/* ===== Entrada – tabela ===== */
+$("#btn-print-entrada").addEventListener("click",()=>window.print());
+$("#btn-clear-filtros-entrada").addEventListener("click",()=>{ state.filtroEntrada={ dia:"", mes:"", sortKey:"dataNf", sortDir:"asc"}; $("#flt-dia-ent").value=""; $("#flt-mes-ent").value=""; renderEntradaTabela(); });
+$("#flt-dia-ent").addEventListener("change",(e)=>{ state.filtroEntrada.dia = parseISOorBR(e.target.value)||""; renderEntradaTabela(); });
+$("#flt-mes-ent").addEventListener("change",(e)=>{ state.filtroEntrada.mes = e.target.value||""; renderEntradaTabela(); });
+$$('#view-entrada thead .sortable').forEach(h=>{
+  h.addEventListener("click",()=>{
+    const key=h.getAttribute("data-sort");
+    if(state.filtroEntrada.sortKey===key){ state.filtroEntrada.sortDir = state.filtroEntrada.sortDir==="asc"?"desc":"asc"; }
+    else{ state.filtroEntrada.sortKey=key; state.filtroEntrada.sortDir="asc"; }
+    renderEntradaTabela();
+  });
+});
+function renderEntradaTabela(){
+  const wrap=$("#entrada-wrap"), empty=$("#entrada-empty"), tbody=$("#entrada-body");
+  let rows = safeArr(state.entradaItens).map(e => ({...e, total: e.itens.reduce((s,it)=>s + it.qtd * it.valorUnit,0)}));
+  const {dia,mes,sortKey,sortDir}=state.filtroEntrada;
+  rows = rows.filter(e=>{
+    const d = e.dataNf||"";
+    if(dia && d!==dia) return false;
+    if(mes && d.slice(0,7)!==mes) return false;
+    return true;
+  }).sort((a,b)=>{
+    let va=a[sortKey], vb=b[sortKey];
+    if(sortKey==="nfNumero" || sortKey==="fornecedor"){ va=va||""; vb=vb||""; const r = va.localeCompare(vb,'pt-BR'); return sortDir==="asc"?r:-r; }
+    if(sortKey==="dataNf"){ va=va||""; vb=vb||""; return sortDir==="asc" ? va.localeCompare(vb) : vb.localeCompare(va); }
+    if(sortKey==="total"){ return sortDir==="asc" ? (va-vb) : (vb-va); }
+    return 0;
+  });
+  classToggle(wrap, rows.length>0); classToggle(empty, rows.length===0);
+  tbody.innerHTML="";
+  let totalGeral=0, totalItensGeral=0;
+  rows.forEach(e=>{
+    const tr=document.createElement("tr");
+    const numItens = e.itens.length;
+    totalGeral += e.total;
+    totalItensGeral += numItens;
+    tr.innerHTML = `
+      <td>${escapeHtml(e.nfNumero||"—")}</td>
+      <td>${escapeHtml(e.fornecedor||"—")}</td>
+      <td>${formatDateDisplay(e.dataNf)}</td>
+      <td>${BRL.format(e.total)}</td>
+      <td>${numItens}</td>
+      <td class="no-print">
+        <button class="btn btn-sky" style="min-height:28px" data-act="edit">Editar</button>
+        <button class="btn btn-rose" style="min-height:28px" data-act="del">Excluir</button>
+      </td>
+    `;
+    tr.querySelector('[data-act="edit"]').addEventListener("click",()=>{
+      state.editingEntradaId = e.id;
+      state.tempManualItens = e.itens.slice();
+      entradaDOM.manualNfnumero.value = e.nfNumero || "";
+      entradaDOM.manualFornecedor.value = e.fornecedor || "";
+      entradaDOM.manualDatanf.value = e.dataNf || TODAY_ISO;
+      renderManualItensTable();
+      classToggle(entradaDOM.manual, true);
+      classToggle(entradaDOM.analise, false);
+    });
+    tr.querySelector('[data-act="del"]').addEventListener("click",()=>{ confirmAction("Excluir NF",`Excluir NF ${escapeHtml(e.nfNumero||"")}?`,()=>{ state.entradaItens=state.entradaItens.filter(x=>x.id!==e.id); persistAll(); renderEntradaTabela(); }); });
+    tbody.appendChild(tr);
+  });
+  $("#chip-comp-entrada").textContent = `Comp.: ${monthNamePt(currentCompetencia())}`;
+  $("#chip-periodo-entrada").textContent = state.periodo.ativo ? `Período: ${formatDateDisplay(state.periodo.de)}–${formatDateDisplay(state.periodo.ate)}` : "Período: mês completo";
+  $("#chip-linhas-entrada").textContent = `NFs: ${rows.length}`;
+  $("#chip-itens-entrada").textContent = `Itens: ${totalItensGeral}`;
+}
+/* ===== Donut ===== */
+function renderDonut(data){
+  const svg=$("#donut"); const empty=$("#mix-empty"); const list=$("#mix-list");
+  if(!data.length){ svg.classList.add("hidden"); list.classList.add("hidden"); empty.classList.remove("hidden"); return; }
+  svg.classList.remove("hidden"); list.classList.remove("hidden"); empty.classList.add("hidden");
+  svg.innerHTML="";
+  const totalReal = data.reduce((a,b)=>a+b.value,0);
+  const total = totalReal || 1;
+  let cum=0; const cx=100,cy=100,r=80,ir=50;
+  data.forEach((d,i)=>{
+    const start=(cum/total)*2*Math.PI; cum+=d.value; const end=(cum/total)*2*Math.PI;
+    const x1=cx+r*Math.sin(start), y1=cy-r*Math.cos(start); const x2=cx+r*Math.sin(end), y2=cy-r*Math.cos(end);
+    const large=(end-start)>Math.PI?1:0;
+    const x= cx+r*Math.sin(start), y= cy-r*Math.cos(start);
+    const path=document.createElementNS("http://www.w3.org/2000/svg","path");
+    const outer=`M ${x1} ${y1} A ${r} ${r} 0 ${large} 1 ${x2} ${y2}`;
+    const xi1=cx+ir*Math.sin(end), yi1=cy-ir*Math.cos(end); const xi2=cx+ir*Math.sin(start), yi2=cy-ir*Math.cos(start);
+    const inner=`L ${xi1} ${yi1} A ${ir} ${ir} 0 ${large} 0 ${xi2} ${yi2} Z`;
+    path.setAttribute("d", outer+" "+inner);
+    path.setAttribute("fill",donutColor(i));
+    path.setAttribute("opacity","0.9");
+    const pct = totalReal>0 ? (d.value/totalReal)*100 : 0;
+    const pctStr = `${pct.toFixed(1).replace(".",",")}%`;
+    path.setAttribute("aria-label", `${d.name}: ${pctStr}`);
+    path.setAttribute("data-forma", d.name);
+    path.addEventListener("mouseover", (e) => {
+      const tooltip = $("#tooltip") || (function() {
+        const tt = document.createElement("div");
+        tt.id = "tooltip";
+        tt.className = "tooltip";
+        document.body.appendChild(tt);
+        return tt;
+      })();
+      tooltip.textContent = `${d.name} – ${pctStr} (${BRL.format(d.value)})`;
+      tooltip.style.left = `${e.pageX}px`;
+      tooltip.style.top = `${e.pageY - 28}px`;
+      tooltip.style.display = "block";
+    });
+    path.addEventListener("mouseout", () => {
+      const tooltip = $("#tooltip");
+      if (tooltip) tooltip.style.display = "none";
+    });
+    path.addEventListener("click", () => {
+      state.mixFormaFilter = d.name;
+      renderSaidaTabela();
+    });
+    svg.appendChild(path);
+  });
+}
+/* ===== Inicialização ===== */
+function renderAll(){
+  renderPainel();
+  renderSaidaTabela();
+  renderEntradaTabela();
+  renderServicos();
+  renderClientes();
+  renderVendedores();
+  renderFormas();
+  renderInsumos("importado");
+  renderInsumos("manual");
+  hydrateClientesDatalist();
+  populateVendedoresSelect();
+}
+$("#kpi-servico-select").addEventListener("change",(e)=>{ state.kpiServicoSel=e.target.value; persistAll(); renderPainel(); });
+ensureSrvSeed();
+setCompetenciaLabel();
+$("#mcomp").value = THIS_MONTH;
+["cab-coleta","cab-servico","cab-entrega"].forEach(id=>$(`#${id}`).value = TODAY_ISO);
+refreshSrvCascata();
+hydrateServicoOptions();
+renderAll();
+$("#btn-toggle-canceladas").addEventListener("click", () => {
+  state.canceladasCollapsed = !state.canceladasCollapsed;
+  persistAll();
+  renderPainel();
+});
+/* ===== Insumos no form ===== */
+function hydrateSelectInsumo(q=""){
+  const sel = saidaDOM.selectInsumo;
+  const all = [...state.insumosImportado, ...state.insumosManual].filter(i=>i.ativo==="S");
+  const filtered = all.filter(i=> !q || normText(`${i.banda} ${i.medida} ${i.tamanho} ${i.tipoBanda} ${i.tipoPneu} ${i.largura} ${i.sulco}`).includes(normText(q)));
+  sel.innerHTML = '<option value="">Selecione um insumo</option>';
+  filtered.forEach(i=>{
+    const opt = document.createElement("option");
+    opt.value = i.id;
+    opt.textContent = `${i.banda} - ${i.medida} (${i.tamanho}) - ${i.tipoBanda} - ${i.tipoPneu}`;
+    sel.appendChild(opt);
+  });
+}
+saidaDOM.searchInsumo.addEventListener("input", (e)=>hydrateSelectInsumo(e.target.value));
+saidaDOM.selectInsumo.addEventListener("change", ()=>{
+  const id = saidaDOM.selectInsumo.value;
+  if(!id) {
+    saidaDOM.banda.value = "";
+    saidaDOM.largura.value = "";
+    saidaDOM.tam.value = "";
+    saidaDOM.medida.value = "";
+    saidaDOM.precoTipo.value = "Venda sem desconto";
+    saidaDOM.valorUnit.value = "R$ 0,00";
+    saidaDOM.valorUnit.readOnly = false;
+    return;
+  }
+  const all = [...state.insumosImportado, ...state.insumosManual];
+  const ins = all.find(i=>i.id===id);
+  if(ins){
+    saidaDOM.banda.value = ins.banda;
+    saidaDOM.largura.value = ins.largura;
+    saidaDOM.tam.value = ins.tamanho;
+    saidaDOM.medida.value = ins.medida;
+    updateValorUnit();
+  }
+});
+function updateValorUnit(){
+  const id = saidaDOM.selectInsumo.value;
+  if(!id) return;
+  const all = [...state.insumosImportado, ...state.insumosManual];
+  const ins = all.find(i=>i.id===id);
+  if(ins){
+    const tipo = saidaDOM.precoTipo.value;
+    const key = tipo === "Venda sem desconto" ? "vendaSemDesc" : "vendaAvista";
+    saidaDOM.valorUnit.value = BRL.format(ins[key]||0);
+    saidaDOM.valorUnit.readOnly = tipo === "Venda sem desconto";
+  }
+}
+saidaDOM.precoTipo.addEventListener("change", updateValorUnit);
+$("#btn-add-insumo").addEventListener("click", ()=>{
+  const isEdit = state.editingInsumoIndex > -1;
+  const qtd = Number(saidaDOM.qtd.value||0);
+  if(qtd < 1){ setErr("qtd", "Qtd ≥1"); return; }
+  clearErr("qtd");
+  const valor = parseBRL(saidaDOM.valorUnit.value);
+  if(valor <= 0){ setErr("valorUnit", "Valor >0"); return; }
+  clearErr("valorUnit");
+  const id = saidaDOM.selectInsumo.value;
+  let custo = 0;
+  if(id){
+    const all = [...state.insumosImportado, ...state.insumosManual];
+    const ins = all.find(i=>i.id===id);
+    if(ins) custo = Number(ins.custoInsumo||0);
+  }
+  const insumo = {
+    qtd,
+    marca: saidaDOM.marca.value.trim(),
+    dot: saidaDOM.dot.value.trim(),
+    banda: saidaDOM.banda.value.trim(),
+    largura: saidaDOM.largura.value.trim(),
+    tam: saidaDOM.tam.value,
+    medida: saidaDOM.medida.value.trim(),
+    valor,
+    custo
+  };
+  if(isEdit){
+    state.tempInsumos[state.editingInsumoIndex] = insumo;
+    state.editingInsumoIndex = -1;
+    $("#btn-add-insumo").textContent = "Adicionar Insumo";
+    addToast("Insumo atualizado.","info");
+  } else {
+    state.tempInsumos.push(insumo);
+    addToast("Insumo adicionado.","info");
+  }
+  saidaDOM.qtd.value = 1;
+  saidaDOM.marca.value = "";
+  saidaDOM.dot.value = "";
+  saidaDOM.banda.value = "";
+  saidaDOM.largura.value = "";
+  saidaDOM.tam.value = "";
+  saidaDOM.medida.value = "";
+  saidaDOM.selectInsumo.value = "";
+  saidaDOM.precoTipo.value = "Venda sem desconto";
+  saidaDOM.valorUnit.value = "R$ 0,00";
+  saidaDOM.valorUnit.readOnly = false;
+  renderTempInsumosTable();
+});
+function renderTempInsumosTable(){
+  const body = $("#insumos-body");
+  body.innerHTML = "";
+  let totalBruto = 0;
+  state.tempInsumos.forEach((ins, idx)=>{
+    const subTotal = ins.qtd * ins.valor;
+    totalBruto += subTotal;
+    const tr = document.createElement("tr");
+    tr.innerHTML = `
+      <td>${ins.qtd}</td>
+      <td>${escapeHtml(ins.marca||"—")}</td>
+      <td>${escapeHtml(ins.dot||"—")}</td>
+      <td>${escapeHtml(ins.banda)}</td>
+      <td>${escapeHtml(ins.largura)}</td>
+      <td>${escapeHtml(ins.tam)}</td>
+      <td>${escapeHtml(ins.medida)}</td>
+      <td>${BRL.format(ins.valor)}</td>
+      <td>${BRL.format(subTotal)}</td>
+      <td>
+        <button class="btn btn-sky" data-idx="${idx}" style="min-height:28px">Editar</button>
+        <button class="btn btn-rose" data-idx="${idx}" style="min-height:28px">Excluir</button>
+      </td>
+    `;
+    tr.querySelector(".btn-sky").addEventListener("click", ()=>{
+      const i = state.tempInsumos[idx];
+      saidaDOM.qtd.value = i.qtd;
+      saidaDOM.marca.value = i.marca;
+      saidaDOM.dot.value = i.dot;
+      saidaDOM.banda.value = i.banda;
+      saidaDOM.largura.value = i.largura;
+      saidaDOM.tam.value = i.tam;
+      saidaDOM.medida.value = i.medida;
+      saidaDOM.valorUnit.value = BRL.format(i.valor);
+      saidaDOM.valorUnit.readOnly = false;
+      saidaDOM.precoTipo.value = "Valor Vendido";
+      state.editingInsumoIndex = idx;
+      $("#btn-add-insumo").textContent = "Atualizar Insumo";
+      addToast("Editando insumo.","info");
+    });
+    tr.querySelector(".btn-rose").addEventListener("click", ()=>{
+      confirmAction("Excluir insumo", "Excluir este insumo da OS?", ()=>{
+        state.tempInsumos.splice(idx,1);
+        renderTempInsumosTable();
+      });
+    });
+    body.appendChild(tr);
+  });
+  $("#total-bruto-insumos").textContent = BRL.format(totalBruto);
+  saidaDOM.vbruto.value = BRL.format(totalBruto);
+  previewLiquido();
+}
+hydrateSelectInsumo();
+function printFichas(ids){
+  const printDiv = $("#print-fichas");
+  printDiv.innerHTML = "";
+  ids.forEach(id=>{
+    const l = state.saidaLinhas.find(x=>x.id===id);
+    if(!l) return;
+    const ficha = document.createElement("div");
+    ficha.className = "ficha-print card p-5";
+    ficha.innerHTML = `
+      <h2>OS ${escapeHtml(l.os||"")} - ${escapeHtml(l.cliente||"")}</h2>
+      <details open>
+        <summary>A) Identificação</summary>
+        <p>OS: ${escapeHtml(l.os||"")}</p>
+        <p>Cliente: ${escapeHtml(l.cliente||"")}</p>
+        <p>Serviço: ${escapeHtml(l.servico||"")}</p>
+      </details>
+      <details open>
+        <summary>B) Pneu/Técnica</summary>
+        <table class="text-sm">
+          <thead><tr><th>Qtd</th><th>Marca</th><th>DOT</th><th>Banda</th><th>Largura</th><th>TAM</th><th>Medida</th><th>Valor Unit.</th><th>Total</th></tr></thead>
+          <tbody>
+            ${l.insumos.map(i => `<tr><td>${i.qtd}</td><td>${escapeHtml(i.marca||"—")}</td><td>${escapeHtml(i.dot||"—")}</td><td>${escapeHtml(i.banda)}</td><td>${escapeHtml(i.largura)}</td><td>${escapeHtml(i.tam)}</td><td>${escapeHtml(i.medida)}</td><td>${BRL.format(i.valor)}</td><td>${BRL.format(i.qtd * i.valor)}</td></tr>`).join("")}
+          </tbody>
+        </table>
+      </details>
+      <details open>
+        <summary>C) Consumos</summary>
+        <p>Ligação: ${l.ligacao} UN</p>
+        <p>Enchimento: ${l.enchimento} KG</p>
+        <p>Cola: ${l.cola} KG</p>
+        <p>Antiquebra: ${l.antiquebra} KG</p>
+        <p>Manchão P: ${l.manchaoP} UN</p>
+        <p>Manchão G: ${l.manchaoG} UN</p>
+        <p>Tinta: ${l.tinta} KG/ML</p>
+        <p>Outros: ${escapeHtml(l.outrosInsumos||"—")}</p>
+      </details>
+      <details open>
+        <summary>D) Financeiro</summary>
+        <p>Bruto: ${l.valorBruto}</p>
+        <p>Forma: ${escapeHtml(l.forma||"—")}</p>
+        <p>Condição: ${escapeHtml(l.condicaoDesc||"—")}</p>
+        <p>Desconto: ${l.desconto}</p>
+        <p>Acréscimo: ${l.acrescimo}</p>
+        <p>Líquido: ${BRL.format(valorLiquidoLinha(l))}</p>
+      </details>
+      <details open>
+        <summary>E) Status</summary>
+        <p>Status: ${escapeHtml(l.status||"")}</p>
+        <p>Obs: ${escapeHtml(l.obs||"—")}</p>
+        <p>Custo: ${BRL.format(l.custoUsado||0)}</p>
+        <p>Margem Recapagem: ${BRL.format(valorLiquidoLinha(l) - (l.custoUsado||0))}</p>
+      </details>
+    `;
+    printDiv.appendChild(ficha);
+  });
+  window.print();
+  printDiv.innerHTML = "";
+}
+$("#btn-export-this").addEventListener("click",()=>{
+  if(!state.editingId) return;
+  const saved = state.saidaLinhas.find(x=>x.id===state.editingId);
+  if(saved){
+    printFichas([saved.id]);
+  }
+});
+/* ===== UI persistence ===== */
+const secFinanceiro = $("#sec-financeiro");
+if(secFinanceiro){
+  secFinanceiro.open = false;
+  secFinanceiro.addEventListener("toggle",()=>{ store.set("sec-financeiro-open", secFinanceiro.open); });
+}
+</script>
+</body>
+</html>
+<!--BUILD_OK-->
